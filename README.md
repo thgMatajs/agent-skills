@@ -1,6 +1,6 @@
 # agent-skills
 
-Agent skills and agents rules.
+Skills for AI coding agents — authoring, then (next) review, QA, Android, and Firebase.
 
 Install with the [Vercel skills CLI](https://skills.sh/):
 
@@ -10,25 +10,51 @@ npx skills add thgMatajs/agent-skills
 
 Pick the skills you want, and which coding agents to install them on.
 
+[![skills.sh](https://skills.sh/b/thgMatajs/agent-skills)](https://skills.sh/thgMatajs/agent-skills)
+
 ## Authoring
 
-| Skill | What it does |
-| --- | --- |
-| [`auditing-skills`](./skills/authoring/auditing-skills) | Grades a `SKILL.md` (structure → writing → contracts → security). |
-| [`skill-builder`](./skills/authoring/skill-builder) | Creates or reworks a skill and gates emission on `auditing-skills`. |
-| [`auditing-agent-rules`](./skills/authoring/auditing-agent-rules) | Audits a repo's agent instruction corpus (CLAUDE.md, AGENTS.md, Cursor/Copilot rules, cost). |
+### auditing-skills
 
-`skill-builder` needs `auditing-skills` installed next to it. Install both:
+Grades a `SKILL.md` (structure → writing → contracts → security) and stops at the first tier that disqualifies it.
+
+**Use when:** reviewing, triaging, or deciding whether to promote or retire an agent skill.
+
+```bash
+npx skills add thgMatajs/agent-skills --skill auditing-skills
+```
+
+### skill-builder
+
+Creates a skill from an idea, or brings an existing one up to standard (`--rework`). Emission is gated on `auditing-skills`.
+
+**Use when:** "create a skill for X", "fix this skill", `/skill-builder`.
+
+Install **both** (hard dependency):
 
 ```bash
 npx skills add thgMatajs/agent-skills --skill auditing-skills --skill skill-builder
 ```
 
-Install the rules auditor on its own:
+### auditing-agent-rules
+
+Audits a repository's **agent instruction corpus** the way you'd audit code: run it, don't just read it. Finds broken commands, contradictions, unenforced claims, stale ecosystem guidance, coverage gaps, and per-session context cost. Ranks findings by impact — it does not sequence the fix.
+
+**Use when:**
+
+- "Audit our rules" / "are CLAUDE.md and AGENTS.md still accurate"
+- Inheriting an unfamiliar repo's agent config
+- "Why do our agent rules cost so much"
+
+**Looks at:** `CLAUDE.md` (including `.claude/CLAUDE.md`), nested docs, Claude `@imports`, `AGENTS.md` / `AGENTS.override.md`, `GEMINI.md`, Cursor `.mdc` rules and commands, Copilot / Devin / Windsurf / Cline / Antigravity rule dirs, and skills under `.claude`, `.agents`, `.cursor`, `.codex`, `.gemini`.
+
+**Seven dimensions:** executability, consistency, enforcement, currency, coverage, context economy, instruction quality.
 
 ```bash
 npx skills add thgMatajs/agent-skills --skill auditing-agent-rules
 ```
+
+Add `-g` to install for every local agent, not only the current one.
 
 ## Coming next
 
