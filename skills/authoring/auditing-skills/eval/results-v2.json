@@ -1,0 +1,6 @@
+{
+  "skill": "auditing-skills v2",
+  "note": "Real run 2026-07-23, v2 fixture (adds Slack scope-creep + prose chunk-validation). Advisor FORBIDDEN in both arms; scoring by an INDEPENDENT judge subagent (arms interleaved+unlabeled), not the author — fixes the two confounds from v1 (§5.2 e/d). 'pass' here = OUTCOME bullets only (C3-C8: routing failure, subagent-contract, security, scope-split, refactor, verdict+ranked-fixes); the format bullets C1-C2 (tiering, per-dim scores) are the skill's prescribed shape and excluded to avoid circularity. Full-8-bullet judge scores: baseline 4/3/5 (mean 4.0/8=0.50), with-skill 8/8/8 (1.0) => full PRG +0.50. Tokens/duration are subagent usage, no advisor this time = honest cost.",
+  "with_skill":    {"pass": [1.0, 1.0, 1.0],       "tokens": [38369, 38051, 38103], "duration_ms": [74932, 83605, 67282]},
+  "without_skill": {"pass": [0.667, 0.5, 0.667],   "tokens": [25694, 25720, 25695], "duration_ms": [48483, 44821, 52476]}
+}

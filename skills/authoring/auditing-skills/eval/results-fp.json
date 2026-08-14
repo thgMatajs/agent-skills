@@ -1,0 +1,16 @@
+{
+  "test": "false-positive rate on a clean, well-authored skill (fixture: writing-commit-messages)",
+  "date": "2026-07-23",
+  "method": "3 with-skill audits, lite mode, advisor forbidden, no dispatch. A clean skill SHOULD score A with zero invented blockers.",
+  "results": [
+    {"rep": 1, "grade": "A", "total": "12/14 (86%)", "invented_blockers": 0},
+    {"rep": 2, "grade": "A", "total": "13/14 (93%)", "invented_blockers": 0},
+    {"rep": 3, "grade": "A", "total": "13/14 (93%)", "invented_blockers": 0}
+  ],
+  "conclusion": "Judgment-layer false-positive rate ~0. All three graded A; all three correctly CONFIRMED the mechanical fork-without-join WARN was a false positive by reading, and did not dock a dimension for it. The only findings raised were real (missing scoped allowed-tools; a dir/name mismatch in the fixture).",
+  "gaps_surfaced_and_fixed": [
+    "Efficiency inter-rater variance for small skills (rep1=1 vs rep2/3=2) -> rubric.md Efficiency anchor disambiguated (small + no deferrable bulk = 2).",
+    "audit_structure.py did not check frontmatter name vs directory -> added a WARN; verified it fires on mismatch."
+  ],
+  "residual": "FP measured on ONE clean skill. A borderline fixture (canonical 1s) is still needed to measure 1-vs-2 variance where real skills cluster."
+}

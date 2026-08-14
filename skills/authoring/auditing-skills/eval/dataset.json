@@ -1,0 +1,22 @@
+{
+  "skill_path": "/Users/thg.inchurch/.claude/skills/auditing-skills/SKILL.md",
+  "tasks": [
+    {
+      "query": "Review this candidate SKILL.md and tell me if it's good enough to promote into a shared skill library.",
+      "files": [
+        "eval/fixtures/pdf-rag-helper/SKILL.md"
+      ],
+      "expected_behavior": [
+        "Structures the audit cheap->expensive (Tier 0 through Tier 4) rather than an ad-hoc list",
+        "Assigns per-dimension scores (percentage of applicable max, corpus ~52% reference) and a grade band",
+        "Flags the description as a workflow-summary + first-person routing failure, not merely 'unclear'",
+        "Names the 'spawn a subagent ... let it figure out the details' line as a subagent-prompt/contract failure (no prompt/scope/return)",
+        "Flags curl|bash and allowed-tools:* as reachable security/contract failures",
+        "Flags the Slack-posting responsibility as scope creep (unrelated to RAG) and recommends a split",
+        "Flags the prose chunk-size validation as something that should be a script/contract, not prose",
+        "Produces a verdict plus a COMPLETE, UNRANKED inventory of suggested improvements — no top-N, no ordering by leverage/effort, no 'do this first'",
+        "States each finding's concrete consequence (what actually happens) rather than a vague risk"
+      ]
+    }
+  ]
+}

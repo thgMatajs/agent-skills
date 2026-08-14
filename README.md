@@ -14,13 +14,19 @@ Pick the skills you want, and which coding agents to install them on.
 
 Skills live at `skills/<category>/<skill>/SKILL.md`. The CLI discovers that layout automatically.
 
-| Category | Path | Status |
+| Category | Skill | Status |
 | --- | --- | --- |
-| Authoring | [`skills/authoring`](./skills/authoring) | empty |
+| Authoring | [`auditing-skills`](./skills/authoring/auditing-skills) | ready |
 | Review | [`skills/review`](./skills/review) | empty |
 | QA | [`skills/qa`](./skills/qa) | empty |
 | Android | [`skills/android`](./skills/android) | empty |
 | Firebase | [`skills/firebase`](./skills/firebase) | empty |
+
+Install only this skill:
+
+```bash
+npx skills add thgMatajs/agent-skills --skill auditing-skills
+```
 
 ## Rules
 

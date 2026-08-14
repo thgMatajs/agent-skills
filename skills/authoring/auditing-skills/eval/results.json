@@ -1,0 +1,6 @@
+{
+  "skill": "auditing-skills",
+  "note": "Real run 2026-07-23. pass = fraction of the 6 expected_behavior bullets, hand-scored (author = grader; biased). CAVEAT 1: bullets 1-2 are the skill's prescribed output FORMAT (tiering, /12 scale), which the baseline cannot pass structurally — so this full-6 PRG (+0.39) is format-conformance, not detection. Outcome-only (bullets 3-6): baseline~0.92, with~1.0 => outcome PRG ~+0.08. CAVEAT 2: the with_skill subagents each called `advisor` on their own; the baseline arm did not. That contaminates both the zero variance and the token/time cost (+32%), so ECG overstates the skill's own cost. A clean re-run must forbid advisor in both arms and use an independent judge.",
+  "with_skill":    {"pass": [1.0, 1.0, 1.0],   "tokens": [32511, 34278, 33535], "duration_ms": [197647, 233531, 159813]},
+  "without_skill": {"pass": [0.58, 0.58, 0.67], "tokens": [25390, 25384, 25383], "duration_ms": [40047, 43631, 41732]}
+}
