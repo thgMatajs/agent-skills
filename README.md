@@ -16,11 +16,18 @@ Pick the skills you want, and which coding agents to install them on.
 | --- | --- |
 | [`auditing-skills`](./skills/authoring/auditing-skills) | Grades a `SKILL.md` (structure → writing → contracts → security). |
 | [`skill-builder`](./skills/authoring/skill-builder) | Creates or reworks a skill and gates emission on `auditing-skills`. |
+| [`auditing-agent-rules`](./skills/authoring/auditing-agent-rules) | Audits a repo's agent instruction corpus (CLAUDE.md, AGENTS.md, Cursor/Copilot rules, cost). |
 
 `skill-builder` needs `auditing-skills` installed next to it. Install both:
 
 ```bash
 npx skills add thgMatajs/agent-skills --skill auditing-skills --skill skill-builder
+```
+
+Install the rules auditor on its own:
+
+```bash
+npx skills add thgMatajs/agent-skills --skill auditing-agent-rules
 ```
 
 ## Coming next
