@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>power-review — visão geral</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <!-- NAV: manter igual em todas as páginas -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__prompt"><span>~/skills</span>/power-review/docs</div>
+        <div class="brand__title">power-review</div>
+        <div class="brand__sub">Documentação da skill de review crítico (stack detectada no repo)</div>
+      </div>
+
+      <nav class="nav" aria-label="Documentação">
+        <div class="nav__label">docs</div>
+        <a class="nav__link is-active" href="index.html">
+          <span class="nav__idx">01</span> Visão geral
+        </a>
+        <a class="nav__link" href="fluxo.html">
+          <span class="nav__idx">02</span> Fluxograma
+        </a>
+        <a class="nav__link" href="decisoes.html">
+          <span class="nav__idx">03</span> Árvore de decisões
+        </a>
+        <a class="nav__link" href="regras.html">
+          <span class="nav__idx">04</span> Regras validadas
+        </a>
+      </nav>
+
+      <div class="sidebar__foot">
+        Fonte: <code>SKILL.md</code><br />
+        CSS puro · dark CLI
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar__path">
+          docs <span class="sep">/</span> <span class="file">index.html</span>
+        </div>
+        <span class="topbar__badge">dark cli</span>
+      </header>
+
+      <main class="content">
+        <header class="page-header">
+          <div class="page-header__kicker">// skill overview</div>
+          <h1>O que é a power-review</h1>
+          <p class="lead">
+            Skill pessoal de review crítico para Merge Requests do GitLab ou branches locais.
+            Tolerância zero em bugs, ambiguidades, gambiarras e violações de SOLID / KISS / YAGNI / DRY —
+            com Context Pack Jira/Figma, re-review incremental e side-effects de workflow.
+          </p>
+          <div class="tag-row">
+            <span class="tag tag--lime">pt-BR</span>
+            <span class="tag">modo MR</span>
+            <span class="tag">modo local</span>
+            <span class="tag">Android / Kotlin</span>
+            <span class="tag">Detekt</span>
+          </div>
+        </header>
+
+        <div class="callout">
+          <div class="callout__icon">!</div>
+          <p>
+            Trigger: pedido de <code>power review</code>, <code>power-review</code>,
+            <code>re-review</code>, “review desta branch”, ou URL/IID de MR.
+            A skill tem <code>disable-model-invocation: true</code> — só entra quando pedida.
+          </p>
+        </div>
+
+        <section id="modos">
+          <h2>Dois modos de entrega</h2>
+          <div class="grid grid--2">
+            <article class="card card--accent">
+              <div class="card__meta">mode = mr</div>
+              <h3 class="card__title">Merge Request</h3>
+              <p class="card__body">
+                Publica discussões inline + nota-resumo via <code>glab</code> /
+                <code>post_review.py</code>. Aplica side-effects (labels, reviewer, Jira).
+              </p>
+              <p class="card__body">
+                Entrada: URL ou IID (<code>.../merge_requests/2457</code>, <code>2457</code>).
+              </p>
+            </article>
+            <article class="card">
+              <div class="card__meta">mode = local</div>
+              <h3 class="card__title">Branch local</h3>
+              <p class="card__body">
+                Entrega o review <strong>somente no chat</strong>. Não publica, não chama
+                <code>post_review.py</code>, não mexe em labels/Jira.
+              </p>
+              <p class="card__body">
+                Entrada: “review desta branch”, nome da branch, ou tip sem MR.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="pilares">
+          <h2>Pilares da análise</h2>
+          <div class="grid grid--3">
+            <article class="card card--soft">
+              <div class="card__meta">01</div>
+              <h3 class="card__title">Persona + stack</h3>
+              <p class="card__body">
+                Regras centrais iguais em qualquer stack
+                (<code>references/persona.md</code>). Overlay e docs oficiais
+                vêm de <code>detect_stack.py</code> +
+                <code>.power-review/stack.json</code>.
+              </p>
+            </article>
+            <article class="card card--soft">
+              <div class="card__meta">02</div>
+              <h3 class="card__title">Linter do repo</h3>
+              <p class="card__body">
+                Smell/estilo só com o linter da stack detectada (Detekt, SwiftLint,
+                ESLint, Ruff, …) e as regras anti-FP em
+                <code>references/linters.md</code>.
+              </p>
+            </article>
+            <article class="card card--soft">
+              <div class="card__meta">03</div>
+              <h3 class="card__title">Context Pack</h3>
+              <p class="card__body">
+                Jira + Figma via skill <code>jira-figma-context</code> (opcional,
+                profile <code>review</code>). Sem a skill, o review segue sem pack.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="checklist">
+          <h2>Checklist operacional</h2>
+          <ol class="steps">
+            <li>
+              <strong>Stack</strong>
+              <code>detect_stack.py --write</code> →
+              <code>.power-review/stack.json</code> + overlay da persona.
+            </li>
+            <li>
+              <strong>Resolver entrada</strong>
+              MR IID/URL ou branch local + source/target/SHAs.
+            </li>
+            <li>
+              <strong>Side-effects start</strong>
+              Se MR aberto: label <code>stat:under review</code> + reviewer + Jira Code Reviewing.
+            </li>
+            <li>
+              <strong>Escopo do diff</strong>
+              <code>full</code> | <code>incremental</code> | <code>noop</code> via marcador HTML.
+            </li>
+            <li>
+              <strong>Context Pack</strong>
+              Delegar a <code>jira-figma-context</code> se existir; senão pular.
+            </li>
+            <li>
+              <strong>Figma × código</strong>
+              Subagente só se houver URL Figma no pack; senão pular.
+            </li>
+            <li>
+              <strong>Fetch + worktree</strong>
+              Worktree da source tip em <code>/tmp/pr-*</code>.
+            </li>
+            <li>
+              <strong>Leitura completa</strong>
+              Arquivos alterados inteiros + carregar <code>detekt.yml</code>.
+            </li>
+            <li>
+              <strong>Detekt (opcional)</strong>
+              Rodar nos módulos tocados; usar saída como evidência.
+            </li>
+            <li>
+              <strong>Prior comments</strong>
+              Só MR: classificar NOVO / DUPLICADO / REFORÇO.
+            </li>
+            <li>
+              <strong>Analisar</strong>
+              Persona + Detekt + aderência ticket + Figma.
+            </li>
+            <li>
+              <strong>Ancorar achados</strong>
+              Severidade, path, <code>new_line</code> no head.
+            </li>
+            <li>
+              <strong>Preview + aprovação</strong>
+              Publicar só após OK do usuário.
+            </li>
+            <li>
+              <strong>Publicar ou chat</strong>
+              MR → <code>post_review.py</code>; local → só chat.
+            </li>
+            <li>
+              <strong>Side-effects finish</strong>
+              Se ≥1 CRÍTICO/ALTO/MÉDIO → label <code>requested_change</code>.
+            </li>
+            <li>
+              <strong>Cleanup</strong>
+              Remover worktree — sempre.
+            </li>
+          </ol>
+          <div class="callout">
+            <div class="callout__icon">∥</div>
+            <p>
+              Passos 4–5 podem rodar em paralelo com 6–7. O passo 5 depende do pack
+              (presença de link Figma).
+            </p>
+          </div>
+        </section>
+
+        <section id="regras">
+          <h2>Regras validadas</h2>
+          <p>
+            A análise aplica tolerância zero em proibições de camada, checklist anti-bug,
+            SOLID/KISS/YAGNI/DRY, anti-overengineering e Detekt do repo.
+            Catálogo completo:
+          </p>
+          <div class="grid grid--2">
+            <a class="card card--accent" href="regras.html" style="display: block; color: inherit;">
+              <div class="card__meta">04 · regras.html</div>
+              <h3 class="card__title">Catálogo de regras</h3>
+              <p class="card__body">
+                Proibições absolutas, arquitetura, 10 anti-bug, radar YAGNI, Detekt e aderência ticket/Figma.
+              </p>
+            </a>
+            <a class="card" href="decisoes.html#d-research-code" style="display: block; color: inherit;">
+              <div class="card__meta">research</div>
+              <h3 class="card__title">Como valida reuso / docs</h3>
+              <p class="card__body">
+                Research de codebase (reuso) e docs oficiais — inline vs subagente — na árvore de decisões.
+              </p>
+            </a>
+          </div>
+        </section>
+
+        <section id="severidades">
+          <h2>Severidades</h2>
+          <div class="tag-row">
+            <span class="tag tag--red">CRÍTICO</span>
+            <span class="tag tag--amber">ALTO</span>
+            <span class="tag tag--amber">MÉDIO</span>
+            <span class="tag tag--cyan">BAIXO</span>
+          </div>
+          <p>
+            Achados bloqueantes para a label <code>requested_change</code> são
+            CRÍTICO, ALTO ou MÉDIO (após dedupe). Só BAIXO ou zero achados → não adiciona a label.
+          </p>
+        </section>
+
+        <section id="artefatos">
+          <h2>Artefatos e scripts</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Arquivo</th>
+                <th>Papel</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>SKILL.md</code></td>
+                <td>Orquestração do fluxo + templates</td>
+              </tr>
+              <tr>
+                <td><code>scripts/resolve_review_scope.py</code></td>
+                <td>Detecta marcador → full / incremental / noop</td>
+              </tr>
+              <tr>
+                <td><code>scripts/apply_review_workflow.py</code></td>
+                <td><code>start</code> / <code>finish</code> — labels, reviewer, Jira</td>
+              </tr>
+              <tr>
+                <td><code>scripts/post_review.py</code></td>
+                <td>Publica inline + nota-resumo (modo MR)</td>
+              </tr>
+              <tr>
+                <td><code>scripts/resolve_context_pack.py</code></td>
+                <td>Acha <code>jira-figma-context</code> (opcional)</td>
+              </tr>
+              <tr>
+                <td><code>references/*</code></td>
+                <td>Persona, modes, Detekt, prior-comments, MR/Jira</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="cli-block">
+            <div class="cli-block__bar">
+              <span class="cli-block__dot"></span>
+              <span class="cli-block__dot"></span>
+              <span class="cli-block__dot"></span>
+              terminal
+            </div>
+            <pre><code># $SKILL_DIR = diretório desta skill
+# Escopo (re-review)
+python3 $SKILL_DIR/scripts/resolve_review_scope.py --mr &lt;IID&gt;
+
+# Context Pack (opcional)
+python3 $SKILL_DIR/scripts/resolve_context_pack.py
+
+# Side-effects
+python3 $SKILL_DIR/scripts/apply_review_workflow.py start --mr &lt;IID&gt;
+python3 $SKILL_DIR/scripts/apply_review_workflow.py finish \
+  --mr &lt;IID&gt; --has-blocking-findings true|false
+
+# Publicação
+python3 $SKILL_DIR/scripts/post_review.py --input review.json</code></pre>
+          </div>
+        </section>
+
+        <section id="marcador">
+          <h2>Marcador de re-review</h2>
+          <p>
+            Toda nota-resumo publicada termina com o marcador HTML. Ele ancora o próximo
+            review incremental no <code>head_sha</code> já revisado:
+          </p>
+          <pre><code>&lt;!-- power-review:head_sha=&lt;head_sha&gt; reviewed_at=&lt;iso8601&gt; --&gt;</code></pre>
+        </section>
+
+        <section id="navegacao">
+          <h2>Navegar nesta doc</h2>
+          <ul class="toc">
+            <li>
+              <a href="fluxo.html">
+                Fluxograma do pipeline
+                <span class="toc__hash">fluxo.html</span>
+              </a>
+            </li>
+            <li>
+              <a href="decisoes.html">
+                Árvore de decisões do encadeamento
+                <span class="toc__hash">decisoes.html</span>
+              </a>
+            </li>
+            <li>
+              <a href="regras.html">
+                Regras validadas
+                <span class="toc__hash">regras.html</span>
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <footer class="page-footer">
+          <span>power-review / docs</span>
+          <a href="fluxo.html">próximo: fluxograma →</a>
+        </footer>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

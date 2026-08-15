@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>power-review — árvore de decisões</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__prompt"><span>~/skills</span>/power-review/docs</div>
+        <div class="brand__title">power-review</div>
+        <div class="brand__sub">Documentação da skill de review crítico Android/Kotlin</div>
+      </div>
+
+      <nav class="nav" aria-label="Documentação">
+        <div class="nav__label">docs</div>
+        <a class="nav__link" href="index.html">
+          <span class="nav__idx">01</span> Visão geral
+        </a>
+        <a class="nav__link" href="fluxo.html">
+          <span class="nav__idx">02</span> Fluxograma
+        </a>
+        <a class="nav__link is-active" href="decisoes.html">
+          <span class="nav__idx">03</span> Árvore de decisões
+        </a>
+        <a class="nav__link" href="regras.html">
+          <span class="nav__idx">04</span> Regras validadas
+        </a>
+      </nav>
+
+      <div class="sidebar__foot">
+        Fonte: <code>SKILL.md</code><br />
+        CSS puro · dark CLI
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar__path">
+          docs <span class="sep">/</span> <span class="file">decisoes.html</span>
+        </div>
+        <span class="topbar__badge">decision tree</span>
+      </header>
+
+      <main class="content">
+        <header class="page-header">
+          <div class="page-header__kicker">// decision tree</div>
+          <h1>Encadeamento e ramificações</h1>
+          <p class="lead">
+            Cada pergunta abaixo define um fluxo distinto. Use esta página para saber
+            o que a skill faz (ou pula) em cada situação — modo, escopo, Figma, publicação e labels.
+          </p>
+        </header>
+
+        <div class="callout">
+          <div class="callout__icon">→</div>
+          <p>
+            Ordem de avaliação no encadeamento:
+            <strong>entrada → modo → side-effects start → escopo → Figma → research código → docs oficiais → prior → publish → finish → cleanup</strong>.
+          </p>
+        </div>
+
+        <div class="tree">
+          <!-- D1 Entrada -->
+          <section class="tree__section" id="d1-entrada">
+            <h2 class="tree__section-title">D1 · Qual a entrada?</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">pergunta</div>
+                <p class="tree-q__text">O usuário passou URL/IID de MR ou pediu review de branch local?</p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">MR (URL / IID)</div>
+                  <p class="tree-branch__action">mode = <code>mr</code></p>
+                  <p class="tree-branch__detail">
+                    <code>glab mr view &lt;IID&gt; --output json</code>.
+                    Usar sempre <code>source_branch</code>, <code>target_branch</code> e
+                    <code>diff_refs</code> do GitLab.
+                  </p>
+                  <div class="tree-leaf">
+                    <span class="tree-leaf__icon">&gt;</span>
+                    <p>Segue para D2 (estado do MR).</p>
+                  </div>
+                </div>
+                <div class="tree-branch tree-branch--no">
+                  <div class="tree-branch__edge">branch / “desta branch”</div>
+                  <p class="tree-branch__action">mode = <code>local</code> (default)</p>
+                  <p class="tree-branch__detail">
+                    Se a branch já tem MR aberto e o usuário pediu publish → preferir
+                    <code>mr</code>. Se pediu só review local → permanece <code>local</code>,
+                    mas herda o target do MR.
+                  </p>
+                  <div class="tree-leaf">
+                    <span class="tree-leaf__icon">&gt;</span>
+                    <p>Segue para D3 (resolver target local).</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- D2 Estado MR -->
+          <section class="tree__section" id="d2-estado-mr">
+            <h2 class="tree__section-title">D2 · Estado do MR (só mode=mr)</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">pergunta</div>
+                <p class="tree-q__text"><code>state == opened</code>?</p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">sim · opened</div>
+                  <p class="tree-branch__action">Side-effects start habilitados</p>
+                  <p class="tree-branch__detail">
+                    Label <code>stat:under review</code>, reviewer atual,
+                    Jira → Code Reviewing. Depois: escopo + análise + publish possível.
+                  </p>
+                </div>
+                <div class="tree-branch tree-branch--warn">
+                  <div class="tree-branch__edge">não · merged / closed / locked</div>
+                  <p class="tree-branch__action">Avisar e pular workflow</p>
+                  <p class="tree-branch__detail">
+                    Sem labels/Jira. Review de código ainda pode rodar se o usuário insistir;
+                    publicação fica sob critério explícito.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- D3 Target local -->
+          <section class="tree__section" id="d3-target-local">
+            <h2 class="tree__section-title">D3 · Resolver target (só mode=local)</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">ordem fixa</div>
+                <p class="tree-q__text">Qual target usar para <code>origin/&lt;target&gt;...HEAD</code>?</p>
+              </div>
+              <div class="grid grid--3" style="margin-top: var(--space-3);">
+                <article class="card card--soft">
+                  <div class="card__meta">1º</div>
+                  <h3 class="card__title">MR aberto da branch</h3>
+                  <p class="card__body">Usar <code>target_branch</code> do MR encontrado via glab.</p>
+                </article>
+                <article class="card card--soft">
+                  <div class="card__meta">2º</div>
+                  <h3 class="card__title">Defaults do repo</h3>
+                  <p class="card__body">
+                    Entre <code>develop</code> / <code>master</code> / <code>main</code>
+                    existentes: ancestral real (merge-base / menor distância).
+                  </p>
+                </article>
+                <article class="card card--accent">
+                  <div class="card__meta">3º</div>
+                  <h3 class="card__title">Ambíguo</h3>
+                  <p class="card__body"><strong>Perguntar</strong> — nunca assumir.</p>
+                </article>
+              </div>
+              <div class="tree-leaf">
+                <span class="tree-leaf__icon">!</span>
+                <p>Local: sem <code>post_review.py</code>, sem side-effects. Entrega só no chat.</p>
+              </div>
+            </div>
+          </section>
+
+          <!-- D4 Escopo -->
+          <section class="tree__section" id="d4-escopo">
+            <h2 class="tree__section-title">D4 · Escopo do diff (re-review)</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">script</div>
+                <p class="tree-q__text">
+                  <code>resolve_review_scope.py</code> encontrou marcador
+                  <code>&lt;!-- power-review:head_sha= --&gt;</code>?
+                </p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--no">
+                  <div class="tree-branch__edge">sem marcador</div>
+                  <p class="tree-branch__action">mode = <code>full</code></p>
+                  <p class="tree-branch__detail">
+                    Diff: <code>origin/&lt;target&gt;...origin/&lt;source&gt;</code> (ou HEAD no local).
+                  </p>
+                </div>
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">com marcador</div>
+                  <p class="tree-branch__action">Comparar last_head × current_head</p>
+                  <div class="tree-nested">
+                    <div class="tree-q">
+                      <div class="tree-q__label">sub-pergunta</div>
+                      <p class="tree-q__text">SHAs diferentes?</p>
+                    </div>
+                    <div class="tree-branches">
+                      <div class="tree-branch tree-branch--yes">
+                        <div class="tree-branch__edge">sim</div>
+                        <p class="tree-branch__action">mode = <code>incremental</code></p>
+                        <p class="tree-branch__detail">
+                          Diff: <code>&lt;last_head&gt;...&lt;current_head&gt;</code>.
+                          Nota: “incremental desde &lt;sha7&gt;”.
+                        </p>
+                      </div>
+                      <div class="tree-branch tree-branch--warn">
+                        <div class="tree-branch__edge">iguais</div>
+                        <p class="tree-branch__action">mode = <code>noop</code></p>
+                        <p class="tree-branch__detail">
+                          Informar: nada novo. Só reanalisar full se o usuário pedir force-full.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tree-leaf">
+                <span class="tree-leaf__icon">*</span>
+                <p>
+                  Mesmo em incremental: ler arquivos <strong>completos</strong> tocados.
+                  Inline só em linhas adicionadas do diff em escopo.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- D5 Figma -->
+          <section class="tree__section" id="d5-figma">
+            <h2 class="tree__section-title">D5 · Encadeamento Figma</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">após Context Pack</div>
+                <p class="tree-q__text">O pack trouxe URL de Figma (ticket ou pai)?</p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">sim · tem link</div>
+                  <p class="tree-branch__action">Disparar subagente Figma × código</p>
+                  <p class="tree-branch__detail">
+                    Task <code>generalPurpose</code>. Foco: fidelidade layout/tokens —
+                    <strong>não</strong> code review geral. Divergências → achados
+                    CRÍTICO…BAIXO.
+                  </p>
+                </div>
+                <div class="tree-branch tree-branch--no">
+                  <div class="tree-branch__edge">não · sem link</div>
+                  <p class="tree-branch__action">PULAR passo 5</p>
+                  <p class="tree-branch__detail">
+                    Anotar na nota/preview: “sem referência de Figma”. Seguir análise.
+                  </p>
+                </div>
+              </div>
+              <div class="tree-leaf">
+                <span class="tree-leaf__icon">∥</span>
+                <p>
+                  Se o pack bloquear/degradar: registrar na nota e <strong>seguir</strong>
+                  o review (não travar o pipeline).
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- D-Research código / reuso -->
+          <section class="tree__section" id="d-research-code">
+            <h2 class="tree__section-title">D-Research · Codebase / reuso</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">persona §8.2</div>
+                <p class="tree-q__text">
+                  Preciso mapear código reutilizável (funções, extensions, utils, padrões, testes)
+                  além dos arquivos do diff?
+                </p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">sim · research necessário</div>
+                  <p class="tree-branch__action">Buscar no repo antes de emitir achados DRY/reuso</p>
+                  <p class="tree-branch__detail">
+                    Alvo típico: symbols similares, extensions Kotlin, helpers de camada,
+                    chamadores, leituras de cache, testes do fluxo crítico.
+                  </p>
+                  <div class="tree-nested">
+                    <div class="tree-q">
+                      <div class="tree-q__label">sub-pergunta</div>
+                      <p class="tree-q__text">O escopo é grande o suficiente para valer um subagente?</p>
+                    </div>
+                    <div class="tree-branches">
+                      <div class="tree-branch tree-branch--yes">
+                        <div class="tree-branch__edge">sim · escopo amplo</div>
+                        <p class="tree-branch__action">
+                          Delegar <code>Task</code> / <code>generalPurpose</code>
+                        </p>
+                        <p class="tree-branch__detail">
+                          Subagente <strong>ad-hoc</strong> (não há skill/arquivo dedicado tipo
+                          <code>prior-comments.md</code>). Pedir mapa: arquivos, padrões,
+                          candidatos a reuso, camadas, testes. Orquestrador consome o mapa na análise.
+                        </p>
+                      </div>
+                      <div class="tree-branch tree-branch--no">
+                        <div class="tree-branch__edge">não · escopo contido</div>
+                        <p class="tree-branch__action">Fazer <strong>inline</strong> no orquestrador</p>
+                        <p class="tree-branch__detail">
+                          Grep/leitura no worktree + validação de hipóteses. Default da skill
+                          (“Busque no repo para validar hipóteses…”).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tree-branch tree-branch--warn">
+                  <div class="tree-branch__edge">mínimo sempre</div>
+                  <p class="tree-branch__action">Pelo menos ler arquivos do diff por completo</p>
+                  <p class="tree-branch__detail">
+                    Research zero fora do diff é frágil para DRY: risco de sugerir código
+                    que já existe. Preview/nota devem mencionar o <strong>resultado do research</strong>
+                    (o que deveria ter sido reutilizado).
+                  </p>
+                </div>
+              </div>
+              <div class="tree-leaf">
+                <span class="tree-leaf__icon">i</span>
+                <p>
+                  <strong>Não existe</strong> um subagente permanente “research-reuse”.
+                  É passo da persona, executado inline ou delegado quando útil.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- D-Research docs -->
+          <section class="tree__section" id="d-research-docs">
+            <h2 class="tree__section-title">D-Research · Docs oficiais (referências)</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">persona §8.3 + SKILL.md</div>
+                <p class="tree-q__text">
+                  Há dúvida técnica ou o achado cita boa prática Android/Kotlin?
+                </p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">sim · pesquisar</div>
+                  <p class="tree-branch__action">Research <strong>inline</strong> pelo orquestrador</p>
+                  <p class="tree-branch__detail">
+                    Rodar <code>date</code> para referência temporal. Buscar docs atuais em
+                    <code>developer.android.com</code> / <code>kotlinlang.org</code>
+                    (e Detekt rules se for smell). Incluir link na seção
+                    <strong>Referência</strong> do comentário.
+                  </p>
+                  <div class="tree-leaf">
+                    <span class="tree-leaf__icon">&gt;</span>
+                    <p>Sem subagente dedicado. WebSearch/fetch fica no orquestrador.</p>
+                  </div>
+                </div>
+                <div class="tree-branch tree-branch--no">
+                  <div class="tree-branch__edge">não · achado óbvio de bug/camada</div>
+                  <p class="tree-branch__action">Pode omitir link de doc</p>
+                  <p class="tree-branch__detail">
+                    Proibições absolutas e bugs evidentes não exigem doc oficial —
+                    mas se mencionar “boa prática”, o link é obrigatório.
+                  </p>
+                </div>
+              </div>
+              <div class="callout" style="margin-top: var(--space-4);">
+                <div class="callout__icon">≠</div>
+                <p>
+                  Isso é <strong>diferente</strong> do Context Pack / Figma:
+                  docs oficiais = guidelines Android/Kotlin; Figma = fidelidade de UI do ticket
+                  (subagente condicional).
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <!-- D6 Prior comments -->
+          <section class="tree__section" id="d6-prior">
+            <h2 class="tree__section-title">D6 · Prior comments</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">pergunta</div>
+                <p class="tree-q__text">Estamos em mode = <code>mr</code>?</p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">sim</div>
+                  <p class="tree-branch__action">Rodar subagente prior-comments</p>
+                  <p class="tree-branch__detail">
+                    Para cada candidato: <code>NOVO</code> | <code>DUPLICADO</code> |
+                    <code>REFORÇO</code>. Publicar só NOVO + REFORÇO válidos.
+                  </p>
+                </div>
+                <div class="tree-branch tree-branch--no">
+                  <div class="tree-branch__edge">não · local</div>
+                  <p class="tree-branch__action">Pular anti-duplicação GitLab</p>
+                  <p class="tree-branch__detail">Não há discussions/notes de MR para cruzar.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- D7 Aprovação -->
+          <section class="tree__section" id="d7-aprovacao">
+            <h2 class="tree__section-title">D7 · Preview aprovado?</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">human gate</div>
+                <p class="tree-q__text">Usuário aprovou o preview?</p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">aprovado</div>
+                  <p class="tree-branch__action">Segue para D8 (publicar)</p>
+                  <p class="tree-branch__detail">
+                    Preview deve incluir Comparing line, aderência, Figma, modo,
+                    achados, omitidos e status Detekt.
+                  </p>
+                </div>
+                <div class="tree-branch tree-branch--warn">
+                  <div class="tree-branch__edge">recusado / cancelado</div>
+                  <p class="tree-branch__action">Não publicar</p>
+                  <p class="tree-branch__detail">
+                    Não aplicar <code>requested_change</code>. Ir direto ao cleanup da worktree.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- D8 Publicar -->
+          <section class="tree__section" id="d8-publicar">
+            <h2 class="tree__section-title">D8 · Canal de entrega</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">pergunta</div>
+                <p class="tree-q__text">mode = <code>mr</code>?</p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">sim</div>
+                  <p class="tree-branch__action"><code>post_review.py</code></p>
+                  <p class="tree-branch__detail">
+                    Discussions inline + nota-resumo. Summary <strong>deve</strong>
+                    terminar com o marcador <code>power-review:head_sha</code>.
+                  </p>
+                  <div class="tree-leaf">
+                    <span class="tree-leaf__icon">&gt;</span>
+                    <p>Segue para D9 (finish / requested_change).</p>
+                  </div>
+                </div>
+                <div class="tree-branch tree-branch--no">
+                  <div class="tree-branch__edge">não · local</div>
+                  <p class="tree-branch__action">Entregar só no chat</p>
+                  <p class="tree-branch__detail">
+                    Não chamar <code>post_review.py</code>. Não aplicar finish de labels.
+                    Cleanup da worktree.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- D9 Finish -->
+          <section class="tree__section" id="d9-finish">
+            <h2 class="tree__section-title">D9 · Label requested_change (pós-publish)</h2>
+            <div class="tree-node">
+              <div class="tree-q">
+                <div class="tree-q__label">após dedupe</div>
+                <p class="tree-q__text">
+                  Lista final tem ≥1 achado <code>CRÍTICO</code>, <code>ALTO</code> ou
+                  <code>MÉDIO</code>?
+                </p>
+              </div>
+              <div class="tree-branches">
+                <div class="tree-branch tree-branch--yes">
+                  <div class="tree-branch__edge">sim · blocking</div>
+                  <p class="tree-branch__action">
+                    <code>finish --has-blocking-findings true</code>
+                  </p>
+                  <p class="tree-branch__detail">
+                    Adiciona label <code>requested_change</code>. Nunca no início do review.
+                  </p>
+                </div>
+                <div class="tree-branch tree-branch--no">
+                  <div class="tree-branch__edge">não · só BAIXO / zero</div>
+                  <p class="tree-branch__action">
+                    <code>finish --has-blocking-findings false</code>
+                  </p>
+                  <p class="tree-branch__detail">
+                    No-op de label. Não remove <code>requested_change</code> antiga
+                    automaticamente em re-reviews limpos.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- D10 Cleanup -->
+          <section class="tree__section" id="d10-cleanup">
+            <h2 class="tree__section-title">D10 · Cleanup (sempre)</h2>
+            <div class="card card--accent">
+              <div class="card__meta">terminal · obrigatório</div>
+              <p class="card__body">
+                Independente de noop, cancelamento, falha parcial de side-effects ou modo local:
+              </p>
+              <pre style="margin-top: var(--space-3); margin-bottom: 0;"><code>git worktree remove --force /tmp/pr-&lt;source_sanitizado&gt;</code></pre>
+            </div>
+          </section>
+        </div>
+
+        <section id="matriz">
+          <h2>Matriz rápida de fluxos</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Fluxo</th>
+                <th>Side-effects</th>
+                <th>Prior / publish</th>
+                <th>Entrega</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>MR opened · full</td>
+                <td>start + finish condicional</td>
+                <td>sim / sim</td>
+                <td>GitLab inline + nota</td>
+              </tr>
+              <tr>
+                <td>MR opened · incremental</td>
+                <td>start + finish condicional</td>
+                <td>sim / sim</td>
+                <td>só delta + marcador novo</td>
+              </tr>
+              <tr>
+                <td>MR opened · noop</td>
+                <td>start (já rodou) · sem publish</td>
+                <td>n/a</td>
+                <td>avisar usuário</td>
+              </tr>
+              <tr>
+                <td>MR closed/merged</td>
+                <td>não</td>
+                <td>sob pedido</td>
+                <td>caso a caso</td>
+              </tr>
+              <tr>
+                <td>Local</td>
+                <td>não</td>
+                <td>não / não</td>
+                <td>somente chat</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3 style="margin-top: var(--space-6);">Research — inline vs subagente</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo de research</th>
+                <th>Executor</th>
+                <th>Obrigatório?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Codebase / reuso (functions, extensions…)</td>
+                <td>Inline (default) ou subagente ad-hoc</td>
+                <td>Sim na prática (DRY); delegação opcional</td>
+              </tr>
+              <tr>
+                <td>Docs oficiais Android/Kotlin</td>
+                <td>Inline (orquestrador)</td>
+                <td>Quando há dúvida ou citação de boa prática</td>
+              </tr>
+              <tr>
+                <td>Figma × implementação</td>
+                <td>Subagente dedicado</td>
+                <td>Só com URL no Context Pack</td>
+              </tr>
+              <tr>
+                <td>Prior comments</td>
+                <td>Subagente dedicado</td>
+                <td>Só mode MR</td>
+              </tr>
+              <tr>
+                <td>Context Pack Jira/Figma</td>
+                <td>Skill <code>jira-figma-context</code></td>
+                <td>Se a skill existir (profile review)</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="regras-link">
+          <h2>Regras que esses research validam</h2>
+          <p>
+            DRY/reuso, anti-overengineering, camadas e links de referência alimentam o catálogo em
+            <a href="regras.html">regras.html</a>.
+          </p>
+        </section>
+
+        <section id="manutencao">
+          <h2>Manutenção desta documentação</h2>
+          <div class="grid grid--2">
+            <article class="card">
+              <div class="card__meta">conteúdo</div>
+              <p class="card__body">
+                Fonte da verdade: <code>SKILL.md</code> + <code>references/</code>.
+                Ao mudar o fluxo da skill, atualize <code>fluxo.html</code> e
+                <code>decisoes.html</code> na mesma mudança.
+              </p>
+            </article>
+            <article class="card">
+              <div class="card__meta">estilo</div>
+              <p class="card__body">
+                Tokens em <code>assets/css/tokens.css</code>. Componentes e diagramas
+                em arquivos separados. Páginas só incluem o shell + conteúdo.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <footer class="page-footer">
+          <a href="fluxo.html">← fluxograma</a>
+          <a href="regras.html">próximo: regras validadas →</a>
+        </footer>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

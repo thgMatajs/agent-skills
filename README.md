@@ -56,11 +56,22 @@ npx skills add thgMatajs/agent-skills --skill auditing-agent-rules
 
 Add `-g` to install for every local agent, not only the current one.
 
+## Review
+
+### power-review
+
+Critical MR/PR or local-branch review. Detects the repo stack and applies matching persona, official docs, and linter. Context pack is token-first (Jira, Linear, Asana, Shortcut, GitHub Issues, Figma) and does not require `jira-figma-context`.
+
+**Use when:** power review, re-review, review this branch, or an MR/PR URL.
+
+```bash
+npx skills add thgMatajs/agent-skills --skill power-review
+```
+
 ## Coming next
 
 | Category | Path |
 | --- | --- |
-| Review | [`skills/review`](./skills/review) |
 | QA | [`skills/qa`](./skills/qa) |
 | Android | [`skills/android`](./skills/android) |
 | Firebase | [`skills/firebase`](./skills/firebase) |

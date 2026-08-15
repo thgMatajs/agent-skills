@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>power-review — fluxograma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__prompt"><span>~/skills</span>/power-review/docs</div>
+        <div class="brand__title">power-review</div>
+        <div class="brand__sub">Documentação da skill de review crítico Android/Kotlin</div>
+      </div>
+
+      <nav class="nav" aria-label="Documentação">
+        <div class="nav__label">docs</div>
+        <a class="nav__link" href="index.html">
+          <span class="nav__idx">01</span> Visão geral
+        </a>
+        <a class="nav__link is-active" href="fluxo.html">
+          <span class="nav__idx">02</span> Fluxograma
+        </a>
+        <a class="nav__link" href="decisoes.html">
+          <span class="nav__idx">03</span> Árvore de decisões
+        </a>
+        <a class="nav__link" href="regras.html">
+          <span class="nav__idx">04</span> Regras validadas
+        </a>
+      </nav>
+
+      <div class="sidebar__foot">
+        Fonte: <code>SKILL.md</code><br />
+        CSS puro · dark CLI
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar__path">
+          docs <span class="sep">/</span> <span class="file">fluxo.html</span>
+        </div>
+        <span class="topbar__badge">pipeline</span>
+      </header>
+
+      <main class="content">
+        <header class="page-header">
+          <div class="page-header__kicker">// flowchart</div>
+          <h1>Como a skill trabalha</h1>
+          <p class="lead">
+            Pipeline linear com ramificações condicionais (MR vs local, Figma, escopo)
+            e uma faixa paralela para Context Pack / Figma enquanto o worktree sobe.
+          </p>
+        </header>
+
+        <div class="legend">
+          <span class="legend__item">
+            <span class="legend__swatch" style="background: var(--lime-glow); border-color: var(--lime);"></span>
+            início / fim
+          </span>
+          <span class="legend__item">
+            <span class="legend__swatch" style="background: rgba(92,225,255,.15); border-color: var(--cyan);"></span>
+            decisão
+          </span>
+          <span class="legend__item">
+            <span class="legend__swatch" style="background: rgba(110,168,255,.15); border-color: var(--blue);"></span>
+            paralelo / subagente
+          </span>
+          <span class="legend__item">
+            <span class="legend__swatch" style="border-style: dashed;"></span>
+            skip / no-op
+          </span>
+        </div>
+
+        <section id="pipeline">
+          <h2>Pipeline principal</h2>
+
+          <div class="flow" aria-label="Fluxograma do power-review">
+            <div class="flow__node flow__node--start">
+              <div class="flow__id">ENTRY</div>
+              <p class="flow__title">Entrada do usuário</p>
+              <p class="flow__desc">URL/IID de MR, “review desta branch”, ou pedido de re-review.</p>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node">
+              <div class="flow__id">01</div>
+              <p class="flow__title">Resolver entrada + branches</p>
+              <p class="flow__desc">
+                <code>glab mr view</code> ou tip local. Guardar source, target,
+                <code>diff_refs</code> (base/head/start). Nunca inventar base.
+              </p>
+              <div class="flow__tags">
+                <span class="tag">modes.md</span>
+                <span class="tag">Comparing line</span>
+              </div>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node flow__node--decision">
+              <div class="flow__id">DECISAO</div>
+              <p class="flow__title">MR aberto?</p>
+              <p class="flow__desc">Só então aplicar side-effects de início. Os dois caminhos convergem no escopo.</p>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="grid grid--2" style="margin-bottom: 0;">
+              <div class="flow__node">
+                <div class="flow__id">02 · SIM → START</div>
+                <p class="flow__title">Side-effects ao iniciar</p>
+                <p class="flow__desc">
+                  <code>apply_review_workflow.py start</code> →
+                  <code>stat:under review</code> + reviewer @me + Jira Code Reviewing.
+                  Falha parcial: registrar e seguir.
+                </p>
+                <div class="flow__tags">
+                  <span class="tag tag--lime">só MR opened</span>
+                </div>
+              </div>
+              <div class="flow__node flow__node--skip">
+                <div class="flow__id">02 · NÃO → SKIP</div>
+                <p class="flow__title">Sem side-effects</p>
+                <p class="flow__desc">Modo local, ou MR merged/closed/locked.</p>
+              </div>
+            </div>
+
+            <div class="flow__connector flow__connector--label" aria-hidden="true">
+              <span class="flow__edge">convergem</span>
+            </div>
+
+            <div class="flow__node">
+              <div class="flow__id">03</div>
+              <p class="flow__title">Escopo do diff</p>
+              <p class="flow__desc">
+                <code>resolve_review_scope.py</code> lê o marcador
+                <code>&lt;!-- power-review:head_sha=... --&gt;</code> e define
+                full / incremental / noop.
+              </p>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <!-- Parallel band -->
+            <div class="flow__node flow__node--parallel">
+              <div class="flow__id">04–07 · PARALELO</div>
+              <p class="flow__title">Contexto ∥ Worktree</p>
+              <p class="flow__desc">Pack Jira/Figma e preparação do código podem avançar juntos.</p>
+            </div>
+
+            <div class="flow-parallel">
+              <div class="flow-parallel__lane">
+                <div class="flow-parallel__label">lane A · contexto</div>
+                <div class="flow__node">
+                  <div class="flow__id">04</div>
+                  <p class="flow__title">Context Pack</p>
+                  <p class="flow__desc">
+                    Skill <code>jira-figma-context</code> (opcional), profile
+                    <code>review</code>. Sem a skill, pular o pack.
+                  </p>
+                </div>
+                <div class="flow__connector" aria-hidden="true"></div>
+                <div class="flow__node flow__node--decision">
+                  <div class="flow__id">05?</div>
+                  <p class="flow__title">Tem URL Figma?</p>
+                  <p class="flow__desc">Sim → subagente de fidelidade. Não → pular.</p>
+                </div>
+                <div class="flow__connector" aria-hidden="true"></div>
+                <div class="flow__node flow__node--parallel">
+                  <div class="flow__id">05</div>
+                  <p class="flow__title">Subagente Figma × código</p>
+                  <p class="flow__desc">Só layout/tokens. Divergências viram achados.</p>
+                </div>
+              </div>
+
+              <div class="flow-parallel__join">∥ sync</div>
+
+              <div class="flow-parallel__lane">
+                <div class="flow-parallel__label">lane B · código</div>
+                <div class="flow__node">
+                  <div class="flow__id">06</div>
+                  <p class="flow__title">Fetch + worktree</p>
+                  <p class="flow__desc">
+                    <code>git worktree add -f /tmp/pr-*</code> na source / tip.
+                  </p>
+                </div>
+                <div class="flow__connector" aria-hidden="true"></div>
+                <div class="flow__node">
+                  <div class="flow__id">07</div>
+                  <p class="flow__title">Leitura completa</p>
+                  <p class="flow__desc">
+                    Arquivos do diff inteiros + <code>detekt.yml</code> (+ baseline).
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node">
+              <div class="flow__id">08</div>
+              <p class="flow__title">Detekt (opcional)</p>
+              <p class="flow__desc">
+                <code>./gradlew :&lt;module&gt;:detekt</code> nos módulos tocados — evidência, não gate.
+              </p>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node flow__node--parallel">
+              <div class="flow__id">09</div>
+              <p class="flow__title">Prior comments (subagente)</p>
+              <p class="flow__desc">
+                Só MR. Classifica candidatos: NOVO | DUPLICADO | REFORÇO.
+                Publica apenas NOVO + REFORÇO válidos.
+              </p>
+              <div class="flow__tags">
+                <span class="tag">prior-comments.md</span>
+              </div>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node flow__node--parallel">
+              <div class="flow__id">10a · RESEARCH</div>
+              <p class="flow__title">Research no codebase (reuso)</p>
+              <p class="flow__desc">
+                Mapear funções, extensions, utils e padrões já existentes para validar DRY/reuso.
+                Orquestrador faz inline (grep/leitura); <strong>pode delegar a subagente</strong>
+                (<code>Task/generalPurpose</code> quando o escopo for grande — não é subagente fixo obrigatório.
+              </p>
+              <div class="flow__tags">
+                <span class="tag">inline (default)</span>
+                <span class="tag tag--cyan">subagente opcional</span>
+              </div>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node">
+              <div class="flow__id">10b · DOCS</div>
+              <p class="flow__title">Research de docs oficiais</p>
+              <p class="flow__desc">
+                Diante de dúvida técnica ou ao citar boa prática: buscar docs
+                <strong>Android / Kotlin atuais</strong> (data do review via <code>date</code>)
+                e linkar no achado. Feito <strong>inline pelo orquestrador</strong> — sem subagente dedicado.
+              </p>
+              <div class="flow__tags">
+                <span class="tag tag--lime">inline</span>
+                <span class="tag">developer.android.com</span>
+                <span class="tag">kotlinlang.org</span>
+              </div>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node">
+              <div class="flow__id">10–11</div>
+              <p class="flow__title">Analisar + ancorar</p>
+              <p class="flow__desc">
+                Persona + Detekt + aderência ao ticket + Figma + resultado do research.
+                Cada achado: severidade, path, <code>new_line</code>, template Antes/Depois + Referência.
+              </p>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node">
+              <div class="flow__id">12</div>
+              <p class="flow__title">Preview + aprovação do usuário</p>
+              <p class="flow__desc">
+                Comparing line, aderência, Figma, modo, lista de achados, omitidos,
+                status Detekt. Gate obrigatório antes de publicar.
+              </p>
+              <div class="flow__tags">
+                <span class="tag tag--amber">human gate</span>
+              </div>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node flow__node--decision">
+              <div class="flow__id">DECISAO</div>
+              <p class="flow__title">Modo MR?</p>
+              <p class="flow__desc">Define canal de entrega.</p>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="grid grid--2" style="margin-bottom: 0;">
+              <div class="flow__node">
+                <div class="flow__id">13 · MR</div>
+                <p class="flow__title">Publicar</p>
+                <p class="flow__desc">
+                  <code>post_review.py --input review.json</code> — inline + nota com marcador.
+                </p>
+              </div>
+              <div class="flow__node flow__node--skip">
+                <div class="flow__id">13 · LOCAL</div>
+                <p class="flow__title">Entregar no chat</p>
+                <p class="flow__desc">Review completo no chat. Sem publicação.</p>
+              </div>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node">
+              <div class="flow__id">14 · FINISH</div>
+              <p class="flow__title">Side-effects ao finalizar</p>
+              <p class="flow__desc">
+                Se lista final tiver ≥1 CRÍTICO/ALTO/MÉDIO →
+                <code>requested_change</code>. Caso contrário, no-op de label.
+              </p>
+              <div class="flow__tags">
+                <span class="tag tag--lime">só após publish MR</span>
+              </div>
+            </div>
+
+            <div class="flow__connector" aria-hidden="true"></div>
+
+            <div class="flow__node flow__node--end">
+              <div class="flow__id">15 · ALWAYS</div>
+              <p class="flow__title">Cleanup da worktree</p>
+              <p class="flow__desc">
+                <code>git worktree remove --force /tmp/pr-*</code> — independente do modo ou cancelamento.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="encadeamento">
+          <h2>Quem faz o quê — inline vs subagente</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Trabalho</th>
+                <th>Como</th>
+                <th>Quando</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Context Pack (Jira/Figma spec)</td>
+                <td><span class="tag tag--lime">skill</span> <code>jira-figma-context</code></td>
+                <td>Se a skill existir (profile <code>review</code>)</td>
+              </tr>
+              <tr>
+                <td>Cruzamento Figma × código</td>
+                <td><span class="tag tag--cyan">subagente</span> <code>Task/generalPurpose</code></td>
+                <td>Só se houver URL Figma no pack</td>
+              </tr>
+              <tr>
+                <td>Prior comments (anti-dupe)</td>
+                <td><span class="tag tag--cyan">subagente</span> <code>Task/generalPurpose</code></td>
+                <td>Só mode MR</td>
+              </tr>
+              <tr>
+                <td>Research codebase / reuso</td>
+                <td><span class="tag">inline</span> default; <span class="tag tag--cyan">subagente</span> opcional</td>
+                <td>Sempre na análise; delegar se escopo grande</td>
+              </tr>
+              <tr>
+                <td>Docs oficiais Android/Kotlin</td>
+                <td><span class="tag">inline</span> orquestrador</td>
+                <td>Dúvida técnica ou citação de boa prática</td>
+              </tr>
+              <tr>
+                <td>Análise persona + Detekt + achados</td>
+                <td><span class="tag">inline</span> orquestrador</td>
+                <td>Sempre</td>
+              </tr>
+              <tr>
+                <td>Escopo / workflow / publish</td>
+                <td><span class="tag tag--amber">scripts</span> Python</td>
+                <td>Conforme mode MR</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="callout">
+            <div class="callout__icon">i</div>
+            <p>
+              <strong>Não existe</strong> um subagente nomeado/fixo só de “research de reuso”.
+              A persona manda: <em>“Research no código (delegar a subagente quando útil)”</em> —
+              mapear arquivos, padrões, código reutilizável, camadas e testes.
+              O orquestrador também busca no repo para validar hipóteses (chamadores, cache, etc.).
+            </p>
+          </div>
+
+          <div class="path-map">
+            <div class="path-map__item">
+              <div class="path-map__key">jira-figma-context</div>
+              <p class="path-map__val">
+                Coleta Context Pack. power-review <strong>não</strong> reimplementa getJiraIssue / fetch Figma.
+              </p>
+            </div>
+            <div class="path-map__item">
+              <div class="path-map__key">subagente Figma</div>
+              <p class="path-map__val">
+                Fidelidade layout/tokens. Condicional ao link no pack.
+              </p>
+            </div>
+            <div class="path-map__item">
+              <div class="path-map__key">subagente prior</div>
+              <p class="path-map__val">
+                Anti-duplicação de discussions/notes. Só modo MR. Contrato em
+                <code>prior-comments.md</code>.
+              </p>
+            </div>
+            <div class="path-map__item">
+              <div class="path-map__key">research reuso</div>
+              <p class="path-map__val">
+                Inline ou subagente ad-hoc. Procura functions, extensions, utils e padrões
+                para não sugerir duplicação.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <footer class="page-footer">
+          <a href="index.html">← visão geral</a>
+          <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
+            <a href="decisoes.html">árvore de decisões →</a>
+            <a href="regras.html">regras validadas →</a>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

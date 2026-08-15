@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>power-review — regras validadas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand__prompt"><span>~/skills</span>/power-review/docs</div>
+        <div class="brand__title">power-review</div>
+        <div class="brand__sub">Documentação da skill de review crítico Android/Kotlin</div>
+      </div>
+
+      <nav class="nav" aria-label="Documentação">
+        <div class="nav__label">docs</div>
+        <a class="nav__link" href="index.html">
+          <span class="nav__idx">01</span> Visão geral
+        </a>
+        <a class="nav__link" href="fluxo.html">
+          <span class="nav__idx">02</span> Fluxograma
+        </a>
+        <a class="nav__link" href="decisoes.html">
+          <span class="nav__idx">03</span> Árvore de decisões
+        </a>
+        <a class="nav__link is-active" href="regras.html">
+          <span class="nav__idx">04</span> Regras validadas
+        </a>
+      </nav>
+
+      <div class="sidebar__foot">
+        Fonte: <code>persona-android.md</code><br />
+        + <code>detekt.md</code>
+      </div>
+    </aside>
+
+    <div class="main">
+      <header class="topbar">
+        <div class="topbar__path">
+          docs <span class="sep">/</span> <span class="file">regras.html</span>
+        </div>
+        <span class="topbar__badge">tolerância zero</span>
+      </header>
+
+      <main class="content">
+        <header class="page-header">
+          <div class="page-header__kicker">// validation rules</div>
+          <h1>Regras que a skill valida</h1>
+          <p class="lead">
+            Catálogo do que o reviewer aplica no diff/código. Fonte:
+            <code>references/persona-android.md</code>,
+            <code>references/detekt.md</code> e heurísticas de
+            <code>reference.md</code>.
+          </p>
+          <div class="tag-row">
+            <span class="tag tag--red">proibição absoluta</span>
+            <span class="tag tag--amber">checklist anti-bug</span>
+            <span class="tag tag--lime">arquitetura</span>
+            <span class="tag tag--cyan">Detekt / estilo</span>
+          </div>
+        </header>
+
+        <div class="callout callout--warn">
+          <div class="callout__icon">!</div>
+          <p>
+            Bugs e violações de camada têm <strong>tolerância zero</strong> mesmo sem regra Detekt.
+            Smell/estilo só sobe se a regra estiver <code>active</code> e estourar threshold do repo.
+          </p>
+        </div>
+
+        <section id="proibicoes">
+          <h2>Proibições absolutas</h2>
+          <div class="grid grid--2">
+            <article class="card">
+              <div class="card__meta">gates</div>
+              <ul>
+                <li><code>--no-verify</code> ou burlar hooks/gates</li>
+                <li>Commit sem passar pelo gate</li>
+              </ul>
+            </article>
+            <article class="card">
+              <div class="card__meta">camadas</div>
+              <ul>
+                <li>Regra de negócio em ViewModel ou Composable</li>
+                <li>Acesso a Room na camada de presentation</li>
+                <li><code>@Suppress</code> / warnings ignorados para esconder falha estrutural</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section id="arquitetura">
+          <h2>Padrões inegociáveis do projeto</h2>
+          <div class="grid grid--3">
+            <article class="card card--soft">
+              <div class="card__meta">01</div>
+              <h3 class="card__title">Clean Architecture</h3>
+              <p class="card__body">Na variação já adotada pelo projeto — não reinventar camadas.</p>
+            </article>
+            <article class="card card--soft">
+              <div class="card__meta">02</div>
+              <h3 class="card__title">MVVM + MVI</h3>
+              <p class="card__body">Compatível com o padrão existente no código tocado.</p>
+            </article>
+            <article class="card card--soft">
+              <div class="card__meta">03</div>
+              <h3 class="card__title">Compose</h3>
+              <p class="card__body">Alta performance, baixo acoplamento, responsabilidades separadas.</p>
+            </article>
+          </div>
+          <ul class="steps" style="margin-top: var(--space-4);">
+            <li>
+              <strong>Arquivos coesos</strong>
+              Responsabilidade única, tamanho contido — nada de arquivos gigantes.
+            </li>
+            <li>
+              <strong>Testes de comportamento real</strong>
+              Cobrir o fluxo crítico com efeito colateral observável.
+            </li>
+            <li>
+              <strong>Reuso obrigatório</strong>
+              Nunca duplicar código nem criar abstração desnecessária.
+            </li>
+          </ul>
+        </section>
+
+        <section id="principios">
+          <h2>Princípios clássicos</h2>
+          <div class="tag-row">
+            <span class="tag tag--lime">SOLID</span>
+            <span class="tag tag--lime">KISS</span>
+            <span class="tag tag--lime">YAGNI</span>
+            <span class="tag tag--lime">DRY</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Tema</th>
+                <th>O que o reviewer procura</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>SOLID / contratos</td>
+                <td>Camadas quebradas, responsabilidades misturadas, acoplamento indevido</td>
+              </tr>
+              <tr>
+                <td>KISS</td>
+                <td>Complexidade sem ganho; “elegante” que obscurece o fluxo</td>
+              </tr>
+              <tr>
+                <td>YAGNI</td>
+                <td>Abstração / generalização sem necessidade comprovada agora</td>
+              </tr>
+              <tr>
+                <td>DRY</td>
+                <td>Duplicação quando já existe função, extension, util ou padrão no repo</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="anti-overeng">
+          <h2>Anti-overengineering radar</h2>
+          <p>Antes de sugerir abstração, as três perguntas precisam de “sim”:</p>
+          <div class="grid grid--3">
+            <article class="card card--accent">
+              <div class="card__meta">Q1</div>
+              <p class="card__body">Existe necessidade <strong>real agora</strong>?</p>
+            </article>
+            <article class="card card--accent">
+              <div class="card__meta">Q2</div>
+              <p class="card__body">Há <strong>≥ 3 ocorrências</strong> que justificam a extração?</p>
+            </article>
+            <article class="card card--accent">
+              <div class="card__meta">Q3</div>
+              <p class="card__body">O <strong>custo cognitivo</strong> da abstração compensa?</p>
+            </article>
+          </div>
+          <div class="callout" style="margin-top: var(--space-4);">
+            <div class="callout__icon">→</div>
+            <p>Qualquer “não” → manter solução concreta; não sugerir a abstração.</p>
+          </div>
+        </section>
+
+        <section id="anti-bug">
+          <h2>Checklist anti-bug (10 obrigatórias)</h2>
+          <p>Antes de considerar o review pronto, validar no diff/código:</p>
+          <ol class="steps">
+            <li><strong>Null / vazio / zero</strong> não tratados?</li>
+            <li><strong>Falha de banco</strong> sem tratamento claro?</li>
+            <li>Ação é <strong>idempotente</strong> se disparada duas vezes?</li>
+            <li>Risco de <strong>corrida de estado</strong> (race)?</li>
+            <li>Funciona com <strong>muitos itens</strong> (escala)?</li>
+            <li><strong>Sair da tela no meio</strong> quebra consistência?</li>
+            <li><strong>Gravação parcial</strong> sem proteção (atomicidade)?</li>
+            <li>Comportamento <strong>offline/local</strong> correto?</li>
+            <li><strong>Validação</strong> 100% no use case?</li>
+            <li><strong>Testes</strong> cobrindo o fluxo crítico?</li>
+          </ol>
+        </section>
+
+        <section id="heuristicas">
+          <h2>Heurísticas adicionais</h2>
+          <div class="grid grid--2">
+            <article class="card">
+              <div class="card__meta">corretude</div>
+              <p class="card__body">
+                Null-safety, off-by-one, erros, bordas; concorrência
+                (<code>flatMapLatest</code>/<code>debounce</code>; cancelamento.
+              </p>
+            </article>
+            <article class="card">
+              <div class="card__meta">Kotlin / Android</div>
+              <p class="card__body">
+                Dispatchers injetados, <code>Result</code>, imutabilidade, escopos, Compose performático.
+              </p>
+            </article>
+            <article class="card">
+              <div class="card__meta">cache</div>
+              <p class="card__body">
+                Chave completa, teto, invalidação, thread-safety.
+              </p>
+            </article>
+            <article class="card">
+              <div class="card__meta">não faça</div>
+              <p class="card__body">
+                Otimização prematura sem evidência; gambiarra que viola contratos;
+                complexidade/acoplamento desnecessários.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="detekt">
+          <h2>Detekt — smell / estilo / naming</h2>
+          <p>
+            Fonte de verdade: <code>config/detekt/detekt.yml</code> (+ baseline) do repo sob review.
+            Não é gosto pessoal do reviewer.
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Regra anti falso-positivo</th>
+                <th>Efeito</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Regra <code>active: false</code></td>
+                <td>Não abrir achado só por esse critério</td>
+              </tr>
+              <tr>
+                <td>Abaixo do threshold</td>
+                <td>Não comentar como smell Detekt</td>
+              </tr>
+              <tr>
+                <td>Arquivo em <code>excludes</code></td>
+                <td>Não aplicar a regra</td>
+              </tr>
+              <tr>
+                <td>Já no baseline sem regressão</td>
+                <td>Não reabrir como novo smell (bugs reais ainda podem)</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            Severidade típica de puro estilo: <span class="tag tag--cyan">BAIXO</span> /
+            <span class="tag tag--amber">MÉDIO</span>. Só ALTO/CRÍTICO se houver impacto de bug,
+            segurança ou contrato de camada.
+          </p>
+        </section>
+
+        <section id="contexto">
+          <h2>Aderência a ticket e Figma</h2>
+          <div class="grid grid--2">
+            <article class="card card--soft">
+              <div class="card__meta">Context Pack</div>
+              <p class="card__body">
+                Cruzar entrega × ACs, regras de negócio, checklist e fora de escopo.
+                Gaps/ambiguidades → perguntar, não inventar defeito.
+              </p>
+            </article>
+            <article class="card card--soft">
+              <div class="card__meta">Figma</div>
+              <p class="card__body">
+                Só se houver link no pack. Fidelidade de layout/tokens vira achado.
+                Não inventar divergência sem spec.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section id="research-link">
+          <h2>Research obrigatório para validar regras</h2>
+          <p>
+            Várias regras (DRY, reuso, camadas, docs oficiais) <strong>dependem de research</strong>.
+            Veja como isso é encadeado em
+            <a href="decisoes.html#d-research-code">D-Research código</a> e
+            <a href="decisoes.html#d-research-docs">D-Research docs</a>.
+          </p>
+        </section>
+
+        <footer class="page-footer">
+          <a href="decisoes.html">← árvore de decisões</a>
+          <a href="index.html">voltar ao início</a>
+        </footer>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
