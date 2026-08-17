@@ -1,7 +1,14 @@
 # Setup do forge (glab / gh / bitbucket / azure)
 
-O review **nunca trava** sem CLI. Sem forge+CLI+auth: modo `local` (só
-chat) e este guia no preview.
+- [GitLab](#gitlab--glab)
+- [GitHub](#github--gh)
+- [Bitbucket Cloud](#bitbucket-cloud-bitbucketorg)
+- [Azure DevOps](#azure-devops--az-rest)
+- [Depois de instalar](#depois-de-instalar)
+
+O review **nunca trava** sem CLI. Sem forge+CLI+auth: modo `local` e este
+guia no preview. `mode=local` com `can_publish=true` (ex. Bitbucket com
+token) ainda pode publicar após aprovação.
 
 Detector:
 

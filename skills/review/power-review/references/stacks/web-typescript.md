@@ -1,6 +1,6 @@
 # Overlay — Web / TypeScript
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `typescriptlang.org` **e** o framework listado no perfil (React, Next,
 Vue, …). Não cite um framework que o `package.json` não usa.
 
@@ -33,7 +33,7 @@ Arquiteto TypeScript/front-end da stack do repo.
 ESLint (+ Prettier se o repo já formata por ele — não brigar com o
 formatter). Configs típicos: `eslint.config.*`, `.eslintrc*`.
 Comando: `npx eslint .` (restrinja aos arquivos do diff se for pesado).
-Regras anti-FP: [linters.md](../linters.md).
+Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 

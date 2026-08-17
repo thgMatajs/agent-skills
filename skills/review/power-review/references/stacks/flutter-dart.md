@@ -1,6 +1,6 @@
 # Overlay — Flutter / Dart
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `docs.flutter.dev` e `dart.dev` (e o que o perfil listar).
 
 ## Persona
@@ -29,7 +29,7 @@ Arquiteto Flutter/Dart. Effective Dart + Flutter docs na data do review.
 ## Linter
 
 `analysis_options.yaml` (linter + analyzer). Comando: `dart analyze`.
-Regras anti-FP: [linters.md](../linters.md).
+Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 

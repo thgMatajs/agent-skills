@@ -1,6 +1,6 @@
 # Overlay — iOS / Swift / SwiftUI
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `developer.apple.com` e `swift.org` (e o que o perfil listar).
 
 ## Persona
@@ -33,7 +33,7 @@ na data do review.
 ## Linter
 
 SwiftLint. Config típico: `.swiftlint.yml`. Comando: `swiftlint lint --quiet`.
-Regras anti-FP: [linters.md](../linters.md). Sem SwiftLint: pule estilo.
+Regras anti-FP: `references/linters.md`. Sem SwiftLint: pule estilo.
 
 ## Snippets
 

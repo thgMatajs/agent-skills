@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/thgMatajs/agent-skills/blob/main/skills/review/power-review/references/review.schema.json",
+  "title": "power-review review.json",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["head_sha", "summary"],
+  "anyOf": [
+    { "required": ["mr"] },
+    { "required": ["pr"] },
+    { "required": ["iid"] }
+  ],
+  "properties": {
+    "forge": {
+      "type": "string",
+      "enum": ["gitlab", "github", "bitbucket", "azure"]
+    },
+    "mr": { "type": ["string", "integer"] },
+    "pr": { "type": ["string", "integer"] },
+    "iid": { "type": ["string", "integer"] },
+    "project": { "type": ["string", "integer"] },
+    "url": { "type": "string" },
+    "base_sha": { "type": "string" },
+    "head_sha": { "type": "string", "minLength": 7 },
+    "start_sha": { "type": "string" },
+    "comments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["path", "new_line", "body"],
+        "properties": {
+          "path": { "type": "string", "minLength": 1 },
+          "new_line": { "type": "integer", "minimum": 1 },
+          "body": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Must end with <!-- power-review:head_sha=<sha> reviewed_at=<iso8601> -->"
+    },
+    "event": {
+      "type": "string",
+      "enum": ["COMMENT", "REQUEST_CHANGES", "APPROVE"],
+      "description": "GitHub review event. APPROVE requires post_review.py --allow-approve."
+    }
+  }
+}

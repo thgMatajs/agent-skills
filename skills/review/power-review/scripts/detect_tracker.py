@@ -40,7 +40,6 @@ ASANA_V0_TASK_RE = re.compile(r"^/0/[^/]+/(\d+)(?:/f)?/?$")
 SHORTCUT_STORY_RE = re.compile(r"/story/(\d+)(?:/|$)")
 GITHUB_ISSUES_PATH_RE = re.compile(r"^/([^/]+)/([^/]+)/issues/(\d+)(?:/|$)")
 LINEAR_HOSTS = ("linear.app",)
-JIRA_HINTS = ("atlassian.net", "jira.")
 ASANA_HOSTS = ("app.asana.com",)
 SHORTCUT_HOSTS = ("app.shortcut.com",)
 GITHUB_HOSTS = ("github.com", "www.github.com")
@@ -122,6 +121,28 @@ def load_saved_tracker(root: Path) -> dict[str, Any] | None:
     return data
 
 
+def jira_host_allowed(host: str) -> bool:
+    """Cloud Atlassian, or a host listed in JIRA_BASE_URL / JIRA_ALLOWED_HOSTS.
+
+    A bare `/browse/` path on an unknown host is not Jira — that would send
+    Basic credentials to whoever put a ticket-shaped URL in the MR body.
+    """
+    host = (host or "").lower().rstrip(".")
+    if not host:
+        return False
+    if host == "atlassian.net" or host.endswith(".atlassian.net"):
+        return True
+    env = (os.environ.get("JIRA_BASE_URL") or "").strip()
+    if env:
+        raw = env if "://" in env else "https://" + env
+        env_host = (urlparse(raw).hostname or "").lower()
+        if env_host and host == env_host:
+            return True
+    extra = os.environ.get("JIRA_ALLOWED_HOSTS") or ""
+    allowed = {h.strip().lower() for h in extra.split(",") if h.strip()}
+    return host in allowed
+
+
 def parse_ticket_url(url: str) -> dict[str, Any] | None:
     url = (url or "").strip()
     if not url:
@@ -152,7 +173,7 @@ def parse_ticket_url(url: str) -> dict[str, Any] | None:
         return {"tracker": None, "key": key, "url": url, "host": host}
     if host.endswith("linear.app") or host == "linear.app":
         return {"tracker": "linear", "key": key, "url": url, "host": host}
-    if any(h in host for h in JIRA_HINTS) or "/browse/" in path:
+    if jira_host_allowed(host):
         base = f"{parsed.scheme}://{parsed.netloc}" if parsed.netloc else None
         return {"tracker": "jira", "key": key, "url": url, "host": host, "base_url": base}
     if key:

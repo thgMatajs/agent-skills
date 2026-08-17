@@ -1,6 +1,6 @@
 # Overlay — Python
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `docs.python.org` (e o que o perfil listar: FastAPI, Django, … se o repo
 usar).
 
@@ -32,7 +32,7 @@ medida do `pyproject` / mypy / pyright já configurado.
 ## Linter
 
 Ruff (ou flake8/mypy se for o que o repo tem). Config: `ruff.toml`,
-`pyproject.toml`. Comando: `ruff check`. Regras anti-FP: [linters.md](../linters.md).
+`pyproject.toml`. Comando: `ruff check`. Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 

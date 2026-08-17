@@ -1,6 +1,6 @@
 # Overlay — Generic
 
-Carregue **depois** de [persona.md](../persona.md). Use quando a detecção
+Carregue **depois** de `references/persona.md`. Use quando a detecção
 não fechou uma stack (repo misto, docs-only, ou linguagens sem perfil).
 
 ## Persona
@@ -22,8 +22,8 @@ sem inventar framework.
 
 ## Linter
 
-Qualquer config listado em `linter.configs`. Sem config: só bug/arquitetura.
-Regras anti-FP: [linters.md](../linters.md).
+Sem config: só bug/arquitetura.
+Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 

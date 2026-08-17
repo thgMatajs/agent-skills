@@ -1,6 +1,6 @@
 # Overlay — Ruby
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `docs.ruby-lang.org` e, se o `Gemfile` tiver Rails, `guides.rubyonrails.org`.
 
 ## Persona
@@ -30,7 +30,7 @@ Arquiteto Ruby (e Rails só se o repo for Rails).
 ## Linter
 
 RuboCop. Config: `.rubocop.yml`. Comando: `bundle exec rubocop`.
-Regras anti-FP: [linters.md](../linters.md).
+Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 

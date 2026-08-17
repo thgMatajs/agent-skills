@@ -117,9 +117,9 @@
                 <div class="flow__id">02 · SIM → START</div>
                 <p class="flow__title">Side-effects ao iniciar</p>
                 <p class="flow__desc">
-                  <code>apply_review_workflow.py start</code> →
-                  <code>stat:under review</code> + reviewer @me + Jira Code Reviewing.
-                  Falha parcial: registrar e seguir.
+                  Skip por padrão. Se o usuário pediu labels/Jira: skill
+                  <code>power-review-workflow</code> depois da aprovação.
+                  <code>apply_review_workflow.py start</code> não entra neste fluxo.
                 </p>
                 <div class="flow__tags">
                   <span class="tag tag--lime">só MR opened</span>
@@ -162,8 +162,8 @@
                   <div class="flow__id">04</div>
                   <p class="flow__title">Context Pack</p>
                   <p class="flow__desc">
-                    Skill <code>jira-figma-context</code> (opcional), profile
-                    <code>review</code>. Sem a skill, pular o pack.
+                    <code>fetch_context_pack.py</code> (token primeiro).
+                    Sem pack, pular e seguir.
                   </p>
                 </div>
                 <div class="flow__connector" aria-hidden="true"></div>
@@ -348,8 +348,8 @@
             <tbody>
               <tr>
                 <td>Context Pack (Jira/Figma spec)</td>
-                <td><span class="tag tag--lime">skill</span> <code>jira-figma-context</code></td>
-                <td>Se a skill existir (profile <code>review</code>)</td>
+                <td><span class="tag tag--lime">script</span> <code>fetch_context_pack.py</code></td>
+                <td>Token primeiro; MCP só no fallback</td>
               </tr>
               <tr>
                 <td>Cruzamento Figma × código</td>
@@ -396,9 +396,9 @@
 
           <div class="path-map">
             <div class="path-map__item">
-              <div class="path-map__key">jira-figma-context</div>
+              <div class="path-map__key">fetch_context_pack.py</div>
               <p class="path-map__val">
-                Coleta Context Pack. power-review <strong>não</strong> reimplementa getJiraIssue / fetch Figma.
+                Coleta Context Pack via token (MCP só no fallback). power-review não depende de outra skill.
               </p>
             </div>
             <div class="path-map__item">

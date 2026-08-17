@@ -4,12 +4,17 @@
 Looks for the latest note/review/comment containing:
   <!-- power-review:head_sha=<sha> reviewed_at=<iso> -->
 
+Bitbucket Cloud and Azure DevOps have no marker adapter: mode is always
+`full` with `incremental_supported=false`.
+
 Prints JSON with mode, branches, SHAs and diff_range.
 
 Usage:
     python3 resolve_review_scope.py --mr 2457
     python3 resolve_review_scope.py --mr 2457 --project 5
     python3 resolve_review_scope.py --pr 12 [--forge github]
+    python3 resolve_review_scope.py --pr 12 --forge bitbucket
+    python3 resolve_review_scope.py --pr 12 --forge azure
 """
 from __future__ import annotations
 
@@ -176,7 +181,7 @@ def decide_mode(
 
 
 def resolve_iid_and_forge(args: argparse.Namespace) -> tuple[str, str]:
-    """--mr only → gitlab; --pr or --forge github → github."""
+    """--mr only → gitlab; --pr or --forge github → github; BB/Azure via --forge."""
     mr_s = str(args.mr).strip() if args.mr not in (None, "") else ""
     pr_s = str(args.pr).strip() if args.pr not in (None, "") else ""
     forge = args.forge
@@ -187,16 +192,49 @@ def resolve_iid_and_forge(args: argparse.Namespace) -> tuple[str, str]:
 
     iid = pr_s or mr_s
     if not iid:
-        print("ERRO: informe --mr <IID> (GitLab) ou --pr <IID> (GitHub)", file=sys.stderr)
+        print(
+            "ERRO: informe --mr <IID> (GitLab) ou --pr <IID> (GitHub/Bitbucket/Azure)",
+            file=sys.stderr,
+        )
         sys.exit(2)
 
     if pr_s and forge == "gitlab":
-        print("ERRO: --pr implica GitHub; não combine com --forge gitlab", file=sys.stderr)
+        print(
+            "ERRO: --pr implica GitHub/Bitbucket/Azure; não combine com --forge gitlab",
+            file=sys.stderr,
+        )
         sys.exit(2)
 
-    if forge == "github" or pr_s:
+    if forge in {"bitbucket", "azure"}:
+        return iid, forge
+    if forge == "github" or (pr_s and forge is None):
         return iid, "github"
     return iid, "gitlab"
+
+
+def run_full_only(iid: str, forge: str) -> dict:
+    """Bitbucket/Azure: no marker scan — caller uses a full diff."""
+    return {
+        "pr": iid,
+        "mr": iid,
+        "forge": forge,
+        "mode": "full",
+        "incremental_supported": False,
+        "reason": (
+            "marcador incremental só GitLab/GitHub; "
+            f"{forge} usa diff full (target...source)"
+        ),
+        "source_branch": "",
+        "target_branch": "",
+        "base_sha": "",
+        "head_sha": "",
+        "start_sha": "",
+        "last_head_sha": None,
+        "diff_range": "",
+        "marker_note_id": None,
+        "mr_state": None,
+        "title": None,
+    }
 
 
 def run_gitlab(mr: str, project_arg: str | None) -> dict:
@@ -295,21 +333,23 @@ def run_github(pr: str) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser(
-        description="Resolve power-review scope for an MR (GitLab) or PR (GitHub)."
+        description="Resolve power-review scope (GitLab/GitHub incremental; Bitbucket/Azure full-only)."
     )
     ap.add_argument("--mr", default=None, help="MR IID (GitLab)")
-    ap.add_argument("--pr", default=None, help="PR number (GitHub)")
+    ap.add_argument("--pr", default=None, help="PR number (GitHub/Bitbucket/Azure)")
     ap.add_argument(
         "--forge",
         default=None,
-        choices=("gitlab", "github"),
-        help="github | gitlab. --pr implica github; --mr sem --forge implica gitlab.",
+        choices=("gitlab", "github", "bitbucket", "azure"),
+        help="--pr sem --forge implica github; --mr sem --forge implica gitlab.",
     )
     ap.add_argument("--project", default=None, help="GitLab project id (optional)")
     a = ap.parse_args()
 
     iid, forge = resolve_iid_and_forge(a)
-    if forge == "github":
+    if forge in {"bitbucket", "azure"}:
+        out = run_full_only(iid, forge)
+    elif forge == "github":
         out = run_github(iid)
     else:
         out = run_gitlab(iid, a.project)

@@ -4,8 +4,10 @@ Para **estilo**, **naming**, **complexidade** e **code smell** genérico, a font
 de verdade é o linter **do repositório sob review** — não o gosto do reviewer.
 
 O perfil em `.power-review/stack.json` diz o nome, os configs encontrados e o
-comando sugerido. Este arquivo é a regra anti falso-positivo, igual em
-qualquer stack.
+comando sugerido. Consultar `linter.configs` (se existirem) é **obrigatório**
+antes de abrir achado de estilo. Rodar `linter.command` é opcional (use a
+saída como evidência se for barato). Sem config: **não** abrir achado só
+de estilo.
 
 ## Onde ler
 

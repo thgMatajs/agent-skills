@@ -1,6 +1,6 @@
 # Overlay — Lua
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `lua.org/manual`. Se o repo for Neovim/OpenResty/Love, use a doc **desse**
 host — não invente um runtime.
 
@@ -22,7 +22,7 @@ Reviewer Lua do runtime do projeto (vanilla, Neovim, game, gateway).
 
 ## Linter
 
-Luacheck se `.luacheckrc` existir. Regras anti-FP: [linters.md](../linters.md).
+Luacheck se `.luacheckrc` existir. Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 

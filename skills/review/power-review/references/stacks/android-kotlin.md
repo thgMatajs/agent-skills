@@ -1,6 +1,6 @@
 # Overlay — Android / Kotlin
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `developer.android.com` e `kotlinlang.org` (e o que o perfil listar).
 
 ## Persona
@@ -31,7 +31,7 @@ review.
 
 Detekt. Config típico: `config/detekt/detekt.yml`, `detekt.yml`, baseline
 `*detekt-baseline*.xml`. Comando: `./gradlew :<module>:detekt --quiet`.
-Regras anti-FP: [linters.md](../linters.md).
+Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 

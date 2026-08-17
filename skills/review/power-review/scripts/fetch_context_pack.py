@@ -10,7 +10,7 @@ Usage:
     python3 fetch_context_pack.py --hint 'fix: ABC-9 login' --root .
     python3 fetch_context_pack.py --from-json ticket.json --source mcp
 
-Stdout: markdown Context Pack
+Stdout: markdown Context Pack wrapped as DADO (not instruction)
 Stderr: instructor JSON when can_fetch is false (token path) or Figma blocked
 """
 from __future__ import annotations
@@ -25,16 +25,19 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from detect_tracker import (  # noqa: E402
     KEY_RE,
     build_profile,
     git_email,
+    jira_host_allowed,
     load_saved_tracker,
     parse_github_issues_key,
     parse_ticket_url,
 )
+from wrap_as_data import wrap_as_data  # noqa: E402
 from fetch_figma_spec import (  # noqa: E402
     enrich_figma,
     figma_token,
@@ -124,7 +127,25 @@ def http_json(url: str, headers: dict[str, str], payload: dict | None = None) ->
         return json.loads(raw) if raw else {}
 
 
+def _jira_base_url(url_info: dict[str, Any] | None) -> str:
+    """Only Atlassian Cloud or JIRA_BASE_URL / JIRA_ALLOWED_HOSTS — never a random /browse/ host."""
+    url_base = ((url_info or {}).get("base_url") or "").rstrip("/")
+    if url_base:
+        host = urlparse(url_base).hostname or ""
+        if jira_host_allowed(host):
+            return url_base
+    env = (os.environ.get("JIRA_BASE_URL") or "").rstrip("/")
+    if env:
+        raw = env if "://" in env else "https://" + env
+        if urlparse(raw).hostname:
+            return env
+    return ""
+
+
 def fetch_jira(key: str, base_url: str) -> dict[str, Any]:
+    host = urlparse(base_url if "://" in base_url else "https://" + base_url).hostname or ""
+    if not jira_host_allowed(host):
+        raise ValueError(f"jira host not allowlisted: {host}")
     token = (os.environ.get("ATLASSIAN_API_TOKEN") or os.environ.get("JIRA_API_TOKEN") or "").strip()
     email = (os.environ.get("JIRA_EMAIL") or git_email() or "").strip()
     raw = f"{email}:{token}".encode("utf-8")
@@ -673,7 +694,7 @@ def render_pack(
                 "",
             ]
         )
-    return "\n".join(lines)
+    return wrap_as_data("\n".join(lines))
 
 
 def main() -> int:
@@ -723,9 +744,9 @@ def main() -> int:
     url_info = parse_ticket_url(args.url) if args.url else None
     try:
         if tracker == "jira":
-            base = (url_info or {}).get("base_url") or (os.environ.get("JIRA_BASE_URL") or "").rstrip("/")
+            base = _jira_base_url(url_info)
             if not base:
-                print("error: JIRA_BASE_URL or ticket URL required", file=sys.stderr)
+                print("error: JIRA_BASE_URL or allowlisted ticket URL required", file=sys.stderr)
                 return 1
             ticket = fetch_jira(tkey, base)
         elif tracker == "linear":

@@ -68,6 +68,14 @@ Critical MR/PR or local-branch review. Detects the repo stack and applies matchi
 npx skills add thgMatajs/agent-skills --skill power-review
 ```
 
+### power-review-workflow
+
+Labels, reviewer e transição Jira **depois** da aprovação do preview. Não faz code review.
+
+```bash
+npx skills add thgMatajs/agent-skills --skill power-review-workflow
+```
+
 ## Coming next
 
 | Category | Path |

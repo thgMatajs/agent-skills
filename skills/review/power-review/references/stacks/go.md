@@ -1,6 +1,6 @@
 # Overlay — Go
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `go.dev` (Effective Go + pkg docs da stdlib usada no diff).
 
 ## Persona
@@ -31,7 +31,7 @@ Arquiteto Go. Simplicidade da linguagem acima de framework.
 
 `golangci-lint` se o repo tiver config; senão `go vet`. Config:
 `.golangci.yml`. Comando: `golangci-lint run`.
-Regras anti-FP: [linters.md](../linters.md).
+Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 

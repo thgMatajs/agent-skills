@@ -57,6 +57,7 @@ import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 from urllib.parse import urlparse
 
 
@@ -64,6 +65,113 @@ from urllib.parse import urlparse
 # https://learn.microsoft.com/en-us/azure/devops/pipelines/get-started/manage-pipelines-with-azure-cli
 AZURE_DEVOPS_RESOURCE = "499b84ac-1321-427f-aa17-267ca6975798"
 AZURE_API_VERSION = "7.1"
+SCHEMA_PATH = Path(__file__).resolve().parent.parent / "references" / "review.schema.json"
+SUMMARY_MARKER_RE = re.compile(
+    r"<!--\s*power-review:head_sha=[0-9a-fA-F]{7,40}"
+    r"(?:\s+reviewed_at=\S+)?\s*-->",
+    re.I,
+)
+
+
+def _json_type(val: object) -> str:
+    if val is None:
+        return "null"
+    if isinstance(val, bool):
+        return "boolean"
+    if isinstance(val, int):
+        return "integer"
+    if isinstance(val, float):
+        return "number"
+    if isinstance(val, str):
+        return "string"
+    if isinstance(val, list):
+        return "array"
+    if isinstance(val, dict):
+        return "object"
+    return type(val).__name__
+
+
+def _type_ok(declared, actual: str) -> bool:
+    allowed = declared if isinstance(declared, list) else [declared]
+    if actual in allowed:
+        return True
+    return actual == "integer" and "number" in allowed
+
+
+def validate_review_schema(review: dict) -> list[str]:
+    """Stdlib check against references/review.schema.json. No jsonschema dep."""
+    if not SCHEMA_PATH.is_file():
+        return [f"schema não encontrado: {SCHEMA_PATH}"]
+    schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+    errs: list[str] = []
+    props = schema.get("properties") or {}
+
+    for key in schema.get("required") or []:
+        if key not in review or review[key] in (None, ""):
+            errs.append(f"faltando obrigatório: {key}")
+
+    any_of = schema.get("anyOf") or []
+    if any_of:
+        matched = False
+        for alt in any_of:
+            reqs = alt.get("required") or []
+            if reqs and all(review.get(k) not in (None, "") for k in reqs):
+                matched = True
+                break
+        if not matched:
+            labels = " ou ".join("/".join(a.get("required") or []) for a in any_of)
+            errs.append(f"informe {labels}")
+
+    for key, spec in props.items():
+        if key not in review or review[key] is None:
+            continue
+        val = review[key]
+        declared = spec.get("type")
+        if declared and not _type_ok(declared, _json_type(val)):
+            errs.append(f"{key}: tipo {_json_type(val)}, esperado {declared}")
+        enum = spec.get("enum")
+        if enum is not None and val not in enum:
+            errs.append(f"{key}: {val!r} fora de {enum}")
+        min_len = spec.get("minLength")
+        if isinstance(val, str) and min_len and len(val) < min_len:
+            errs.append(f"{key}: minLength {min_len}")
+        if key != "comments" or not isinstance(val, list):
+            continue
+        item_spec = spec.get("items") or {}
+        item_req = item_spec.get("required") or []
+        item_props = item_spec.get("properties") or {}
+        for i, item in enumerate(val):
+            if not isinstance(item, dict):
+                errs.append(f"comments[{i}]: deve ser objeto")
+                continue
+            for rk in item_req:
+                if rk not in item or item[rk] in (None, ""):
+                    errs.append(f"comments[{i}].{rk} obrigatório")
+            for pk, ps in item_props.items():
+                if pk not in item or item[pk] is None:
+                    continue
+                iv = item[pk]
+                dt = ps.get("type")
+                if dt and not _type_ok(dt, _json_type(iv)):
+                    errs.append(
+                        f"comments[{i}].{pk}: tipo {_json_type(iv)}, esperado {dt}"
+                    )
+                if isinstance(iv, str) and ps.get("minLength") and len(iv) < ps["minLength"]:
+                    errs.append(f"comments[{i}].{pk}: vazio")
+                minimum = ps.get("minimum")
+                if isinstance(iv, int) and not isinstance(iv, bool) and minimum is not None:
+                    if iv < minimum:
+                        errs.append(f"comments[{i}].{pk}: mínimo {minimum}")
+
+    summary = review.get("summary") or ""
+    if isinstance(summary, str) and summary.strip():
+        matches = list(SUMMARY_MARKER_RE.finditer(summary))
+        if not matches or summary[matches[-1].end() :].strip():
+            errs.append(
+                "summary deve terminar com "
+                "<!-- power-review:head_sha=<sha> reviewed_at=<iso> -->"
+            )
+    return errs
 
 
 def run_api(cli: str, args: list[str]):
@@ -440,7 +548,7 @@ def post_gitlab(review: dict, dry_run: bool) -> int:
     return 1 if fails else 0
 
 
-def post_github(review: dict, dry_run: bool) -> int:
+def post_github(review: dict, dry_run: bool, allow_approve: bool = False) -> int:
     """Um Pull Request Review com comments inline + body (resumo).
 
     Docs: POST /repos/{owner}/{repo}/pulls/{pull_number}/reviews
@@ -467,6 +575,12 @@ def post_github(review: dict, dry_run: bool) -> int:
     event = review.get("event") or "COMMENT"
     if event not in {"COMMENT", "REQUEST_CHANGES", "APPROVE"}:
         print(f"ERRO: event GitHub inválido: {event}", file=sys.stderr)
+        return 2
+    if event == "APPROVE" and not allow_approve:
+        print(
+            "ERRO: event=APPROVE exige --allow-approve (só se o usuário pediu aprovação no GitHub).",
+            file=sys.stderr,
+        )
         return 2
     payload = {
         "commit_id": head_sha,
@@ -673,10 +787,38 @@ def main() -> None:
         default=None,
     )
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument(
+        "--allow-approve",
+        action="store_true",
+        help="Permite event=APPROVE no GitHub. Só com pedido explícito do usuário.",
+    )
     a = ap.parse_args()
 
-    with open(a.input, encoding="utf-8") as f:
-        review = json.load(f)
+    try:
+        with open(a.input, encoding="utf-8") as f:
+            review = json.load(f)
+    except FileNotFoundError:
+        print(f"ERRO: review.json não encontrado: {a.input}", file=sys.stderr)
+        sys.exit(2)
+    except json.JSONDecodeError as exc:
+        print(
+            f"ERRO: review.json inválido ({a.input}): {exc.msg} "
+            f"(linha {exc.lineno}, coluna {exc.colno}). "
+            "Shape: references/review.schema.json "
+            "(head_sha, summary, mr ou pr; comments[].path/new_line/body).",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+    if not isinstance(review, dict):
+        print("ERRO: review.json deve ser um objeto JSON.", file=sys.stderr)
+        sys.exit(2)
+
+    schema_errs = validate_review_schema(review)
+    if schema_errs:
+        print("ERRO: review.json fora de references/review.schema.json:", file=sys.stderr)
+        for item in schema_errs:
+            print(f"  - {item}", file=sys.stderr)
+        sys.exit(2)
 
     if not review.get("comments") and not review.get("summary"):
         print("ERRO: nada para postar (sem 'comments' e sem 'summary').", file=sys.stderr)
@@ -684,7 +826,7 @@ def main() -> None:
 
     forge = infer_forge(review, a.forge)
     if forge == "github":
-        raise SystemExit(post_github(review, a.dry_run))
+        raise SystemExit(post_github(review, a.dry_run, allow_approve=a.allow_approve))
     if forge == "gitlab":
         raise SystemExit(post_gitlab(review, a.dry_run))
     if forge == "bitbucket":

@@ -505,7 +505,7 @@
               <p class="card__body">
                 Independente de noop, cancelamento, falha parcial de side-effects ou modo local:
               </p>
-              <pre style="margin-top: var(--space-3); margin-bottom: 0;"><code>git worktree remove --force /tmp/pr-&lt;source_sanitizado&gt;</code></pre>
+              <pre style="margin-top: var(--space-3); margin-bottom: 0;"><code>git worktree remove --force "$WT"</code></pre>
             </div>
           </section>
         </div>
@@ -583,12 +583,12 @@
               <tr>
                 <td>Prior comments</td>
                 <td>Subagente dedicado</td>
-                <td>Só mode MR</td>
+                <td>Só mode MR/PR com <code>can_resolve</code></td>
               </tr>
               <tr>
                 <td>Context Pack Jira/Figma</td>
-                <td>Skill <code>jira-figma-context</code></td>
-                <td>Se a skill existir (profile review)</td>
+                <td><code>fetch_context_pack.py</code></td>
+                <td>Token primeiro; MCP só no fallback</td>
               </tr>
             </tbody>
           </table>

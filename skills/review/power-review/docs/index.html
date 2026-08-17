@@ -70,8 +70,9 @@
         <div class="callout">
           <div class="callout__icon">!</div>
           <p>
-            Trigger: pedido de <code>power review</code>, <code>power-review</code>,
-            <code>re-review</code>, “review desta branch”, ou URL/IID de MR.
+            <code>docs/*.html</code> é guia <strong>humano</strong> — fora do runtime
+            da skill. O agente segue <code>SKILL.md</code>.
+            Trigger: pedido de <code>power review</code> ou invocação explícita.
             A skill tem <code>disable-model-invocation: true</code> — só entra quando pedida.
           </p>
         </div>
@@ -130,8 +131,8 @@
               <div class="card__meta">03</div>
               <h3 class="card__title">Context Pack</h3>
               <p class="card__body">
-                Jira + Figma via skill <code>jira-figma-context</code> (opcional,
-                profile <code>review</code>). Sem a skill, o review segue sem pack.
+                Jira + Figma via <code>fetch_context_pack.py</code> (token primeiro;
+                MCP só se o token não puder rodar). Sem pack, o review segue.
               </p>
             </article>
           </div>
@@ -159,7 +160,8 @@
             </li>
             <li>
               <strong>Context Pack</strong>
-              Delegar a <code>jira-figma-context</code> se existir; senão pular.
+              <code>detect_tracker.py</code> + <code>fetch_context_pack.py</code>
+              (token; MCP só no fallback). Sem pack, seguir.
             </li>
             <li>
               <strong>Figma × código</strong>
@@ -281,8 +283,8 @@
                 <td>Publica inline + nota-resumo (modo MR)</td>
               </tr>
               <tr>
-                <td><code>scripts/resolve_context_pack.py</code></td>
-                <td>Acha <code>jira-figma-context</code> (opcional)</td>
+                <td><code>scripts/fetch_context_pack.py</code></td>
+                <td>Context Pack via token ou <code>--from-json --source mcp</code></td>
               </tr>
               <tr>
                 <td><code>references/*</code></td>
@@ -303,15 +305,15 @@
 python3 $SKILL_DIR/scripts/resolve_review_scope.py --mr &lt;IID&gt;
 
 # Context Pack (opcional)
-python3 $SKILL_DIR/scripts/resolve_context_pack.py
+python3 $SKILL_DIR/scripts/fetch_context_pack.py --root . --key ABC-12
 
-# Side-effects
-python3 $SKILL_DIR/scripts/apply_review_workflow.py start --mr &lt;IID&gt;
-python3 $SKILL_DIR/scripts/apply_review_workflow.py finish \
-  --mr &lt;IID&gt; --has-blocking-findings true|false
+# Worktree (execute a linha que o script imprimir)
+python3 $SKILL_DIR/scripts/worktree_path.py --branch &lt;source&gt; --print-cmd add
+
+# Side-effects: skill power-review-workflow (não este fluxo)
 
 # Publicação
-python3 $SKILL_DIR/scripts/post_review.py --input review.json</code></pre>
+python3 $SKILL_DIR/scripts/post_review.py --input review.json --dry-run</code></pre>
           </div>
         </section>
 

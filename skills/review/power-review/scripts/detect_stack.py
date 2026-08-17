@@ -566,9 +566,9 @@ def write_active_stack(skill_dir: Path, profile: dict[str, Any]) -> Path:
                 "",
                 "Load in this order:",
                 "",
-                "1. [persona.md](persona.md) — core rules (same on every stack)",
-                f"2. [{overlay}]({overlay}) — stack overlay",
-                "3. [linters.md](linters.md) — style findings follow the project linter",
+                "1. `persona.md` — core rules (same on every stack)",
+                f"2. `{overlay}` — stack overlay",
+                "3. `linters.md` — style findings follow the project linter",
                 "",
                 "## Official docs (search only these)",
                 "",
@@ -618,6 +618,20 @@ def main() -> int:
     dest = root / PROFILE_REL
     existing = load_profile(dest)
     action = "detected"
+    needs_ask = (
+        not forced
+        and confidence == "medium"
+        and len(candidates) > 1
+        and not (existing and existing.get("stack_id") == profile["stack_id"])
+    )
+    if needs_ask:
+        action = "ask"
+        profile["action"] = action
+        profile["profile_path"] = str(dest)
+        profile["profile_exists"] = dest.is_file()
+        profile["skill_active_path"] = None
+        print(json.dumps(profile, ensure_ascii=False, indent=2))
+        return 0
     if args.write:
         if existing and existing.get("stack_id") == profile["stack_id"] and not args.force:
             existing["signals"] = profile["signals"]

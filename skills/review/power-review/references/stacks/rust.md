@@ -1,6 +1,6 @@
 # Overlay — Rust
 
-Carregue **depois** de [persona.md](../persona.md). Docs oficiais: só
+Carregue **depois** de `references/persona.md`. Docs oficiais: só
 `doc.rust-lang.org`.
 
 ## Persona
@@ -30,7 +30,7 @@ Arquiteto Rust. Ownership e API pequena acima de macro/abstração.
 
 Clippy + rustfmt do projeto. Comando:
 `cargo clippy --all-targets -- -D warnings` só se o repo já falha assim.
-Regras anti-FP: [linters.md](../linters.md).
+Regras anti-FP: `references/linters.md`.
 
 ## Snippets
 
