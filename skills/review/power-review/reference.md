@@ -166,8 +166,11 @@ ou bodies de reviews + comentários de issue do PR (GitHub). Bitbucket/Azure:
 
 ## Side-effects
 
-Não rode `start`/`finish` neste fluxo. Skill `power-review-workflow` (script
-`apply_review_workflow.py`). Bitbucket/Azure/`local`: skip.
+Não rode `start`/`finish` neste fluxo. **Peça ao usuário**
+`/power-review-workflow` com `--mr|--pr <IID>` (finish:
+`--has-blocking-findings`). Script: `apply_review_workflow.py` em
+`power-review/scripts/` (`$PR_DIR="$SKILL_DIR/../power-review"` na irmã).
+Bitbucket/Azure/`local`: skip.
 
 ## Troubleshooting
 

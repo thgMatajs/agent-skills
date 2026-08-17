@@ -14,24 +14,27 @@ allowed-tools: Read, Grep, Glob
 `disable-model-invocation: true`: só invocação explícita. **Não** faz code
 review nem publica inline — isso é `power-review`.
 
-Requer a skill `power-review` no catálogo (o script vive lá).
-`$PR_DIR` = diretório de `power-review`.
+`$SKILL_DIR` = diretório desta skill.
+`$PR_DIR="$SKILL_DIR/../power-review"` — o script vive na irmã.
+
 Bitbucket / Azure / branch local → **sair** (nada a fazer).
 GitLab/GitHub + MR/PR aberto → rodar o script. Senão → sair.
 
 MR/PR precisa estar **aberto**. Falha parcial: registrar e não travar.
+`--mr|--pr <IID>` é obrigatório. No `finish`, `--has-blocking-findings`
+`true|false` também.
 
 ```bash
 # GitLab
-python3 $PR_DIR/scripts/apply_review_workflow.py start \
+python3 "$PR_DIR/scripts/apply_review_workflow.py" start \
   --mr <IID> [--jira-key KEY] [--dry-run]
-python3 $PR_DIR/scripts/apply_review_workflow.py finish \
+python3 "$PR_DIR/scripts/apply_review_workflow.py" finish \
   --mr <IID> --has-blocking-findings true|false [--dry-run]
 
 # GitHub
-python3 $PR_DIR/scripts/apply_review_workflow.py start \
+python3 "$PR_DIR/scripts/apply_review_workflow.py" start \
   --pr <IID> [--forge github] [--jira-key KEY] [--dry-run]
-python3 $PR_DIR/scripts/apply_review_workflow.py finish \
+python3 "$PR_DIR/scripts/apply_review_workflow.py" finish \
   --pr <IID> [--forge github] --has-blocking-findings true|false [--dry-run]
 ```
 

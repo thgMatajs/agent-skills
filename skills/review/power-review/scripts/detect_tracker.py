@@ -143,6 +143,11 @@ def jira_host_allowed(host: str) -> bool:
     return host in allowed
 
 
+def linear_host(host: str) -> bool:
+    host = (host or "").lower().rstrip(".")
+    return host == "linear.app" or host.endswith(".linear.app")
+
+
 def parse_ticket_url(url: str) -> dict[str, Any] | None:
     url = (url or "").strip()
     if not url:
@@ -152,12 +157,15 @@ def parse_ticket_url(url: str) -> dict[str, Any] | None:
     path = parsed.path or ""
     query = parse_qs(parsed.query or "")
     key = None
-    m = KEY_RE.search(path) or KEY_RE.search(url)
-    if m:
-        key = m.group(1)
-    if not key and query.get("selectedIssue"):
-        m = KEY_RE.search(query["selectedIssue"][0])
-        key = m.group(1) if m else query["selectedIssue"][0]
+    # Do not harvest ABC-12 from an untrusted host — that key would ride
+    # the Jira/Linear token path against JIRA_BASE_URL.
+    if jira_host_allowed(host) or linear_host(host):
+        m = KEY_RE.search(path) or KEY_RE.search(url)
+        if m:
+            key = m.group(1)
+        if not key and query.get("selectedIssue"):
+            m = KEY_RE.search(query["selectedIssue"][0])
+            key = m.group(1) if m else query["selectedIssue"][0]
     if host in ASANA_HOSTS:
         gid = asana_task_gid(path)
         return {"tracker": "asana" if gid else None, "key": gid, "url": url, "host": host}
@@ -165,19 +173,17 @@ def parse_ticket_url(url: str) -> dict[str, Any] | None:
         sid = shortcut_story_id(path)
         if sid:
             return {"tracker": "shortcut", "key": sid, "url": url, "host": host}
-        return {"tracker": None, "key": key, "url": url, "host": host}
+        return {"tracker": None, "key": None, "url": url, "host": host}
     if host in GITHUB_HOSTS:
         gh = github_issues_from_path(path)
         if gh:
             return {"tracker": "github_issues", "url": url, "host": host, **gh}
-        return {"tracker": None, "key": key, "url": url, "host": host}
-    if host.endswith("linear.app") or host == "linear.app":
+        return {"tracker": None, "key": None, "url": url, "host": host}
+    if linear_host(host):
         return {"tracker": "linear", "key": key, "url": url, "host": host}
     if jira_host_allowed(host):
         base = f"{parsed.scheme}://{parsed.netloc}" if parsed.netloc else None
         return {"tracker": "jira", "key": key, "url": url, "host": host, "base_url": base}
-    if key:
-        return {"tracker": None, "key": key, "url": url, "host": host}
     return {"tracker": None, "key": None, "url": url, "host": host}
 
 
@@ -264,7 +270,9 @@ def pick_tracker(
         return url_info["tracker"], "url", url_info.get("key") or key
     extracted = key
     if not extracted and url_info:
-        extracted = url_info.get("key")
+        host = url_info.get("host") or ""
+        if jira_host_allowed(host) or linear_host(host):
+            extracted = url_info.get("key")
     if not extracted and hint:
         m = KEY_RE.search(hint)
         extracted = m.group(1) if m else None

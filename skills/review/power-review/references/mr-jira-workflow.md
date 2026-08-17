@@ -1,6 +1,7 @@
 # Workflow MR/PR + Jira (side-effects)
 
-**Não rode nesta skill.** Labels/Jira pertencem à skill `power-review-workflow`.
+**Não rode nesta skill.** Peça ao usuário `/power-review-workflow` com
+`--mr|--pr <IID>` (e no `finish`, `--has-blocking-findings`).
 
 Só se o usuário pediu, **depois da aprovação do preview**, GitLab/GitHub,
 MR/PR aberto. Bitbucket / Azure / `local`: nunca.

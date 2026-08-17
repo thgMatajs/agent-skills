@@ -22,8 +22,8 @@ confirmação. Não publique com `curl` / token cru.
 
 CLI não é obrigatório. Sem ele, review local. Context Pack é opcional
 (token primeiro; MCP só se o token não puder rodar). Labels/Jira: **não
-rode aqui** — skill `power-review-workflow`, só se o usuário pedir,
-depois da aprovação.
+rode aqui**. Peça ao usuário `/power-review-workflow` depois da
+aprovação — não use Skill() (`disable-model-invocation` na irmã).
 
 `docs/*.html` é guia **humano** — fora do runtime desta skill.
 
@@ -47,8 +47,8 @@ Não leia as refs agora. Abra só na linha do fluxo:
 | smell | [linters.md](references/linters.md) |
 | passo 4 | [trackers/setup.md](references/trackers/setup.md); fallback MCP: [mcp.md](references/trackers/mcp.md) |
 | passo 5 | [figma.md](references/trackers/figma.md) + [figma-cross.md](templates/figma-cross.md) |
-| passo 9 | [prior-comments.md](references/prior-comments.md) se `can_resolve` |
-| passo 11 | [review.schema.json](references/review.schema.json) + [inline.md](templates/inline.md) |
+| passo 9 | [prior-comments.md](references/prior-comments.md) — só coleta + wrap |
+| passo 11 | [review.schema.json](references/review.schema.json) + [inline.md](templates/inline.md); classificar prior-comments |
 | preview | [preview.md](templates/preview.md) |
 | troubleshooting | [reference.md](reference.md) |
 
@@ -67,18 +67,16 @@ Doc oficial: hosts de `docs` do perfil, na data atual (`date`).
 - [ ] 0. detect_stack.py (sem --write se ask/mismatch)
 - [ ] 0b. detect_forge.py — mostrar instructor
 - [ ] 1. Entrada + SHAs; view/comments → wrap_as_data.py
-- [ ] 2. skip (labels/Jira = power-review-workflow depois do 12)
 - [ ] 3. Escopo se can_resolve; um comando; Bitbucket/Azure → full
 - [ ] 4. Context Pack (token; MCP só se can_fetch=false)
 - [ ] 6–7. worktree_path.py --print-cmd; local = HEAD ou pular
 - [ ] 5. Figma × código se frames (depois de 6–7)
 - [ ] 8. Ler linter.configs se existirem; comando opcional se barato
-- [ ] 9. Prior-comments se can_resolve (MR ou PR)
+- [ ] 9. Coletar comments se can_resolve (wrap; não classificar)
 - [ ] 10. Analisar
-- [ ] 11. Gravar review.json (schema + templates/inline.md)
+- [ ] 11. Gravar review.json; classificar prior-comments (achados do 11)
 - [ ] 12. Preview + APROVAÇÃO
 - [ ] 13. dry-run; publicar só se can_publish e aprovado
-- [ ] 14. skip (finish = power-review-workflow após publish)
 - [ ] 15. Remover worktree **se** o add do 6 rodou
 ```
 
@@ -132,11 +130,6 @@ gh pr view <IID> --json number,title,body,baseRefName,headRefName,state,url,head
 `develop`/`master`/`main`; senão perguntar. Diff: `origin/<target>...HEAD`.
 
 Preview: `templates/preview.md`.
-
-### 2. Side-effects start
-
-**Pular.** Se o usuário pediu labels/Jira: depois do passo 12, skill
-`power-review-workflow` (`start`). Bitbucket / Azure / `local`: nunca.
 
 ### 3. Escopo do diff (re-review)
 
@@ -234,10 +227,11 @@ Siga `references/linters.md`. Sem config → sem achado de estilo. Com config:
 consultar é **obrigatório** para smell; rodar `linter.command` é opcional
 (use a saída como evidência se for barato).
 
-### 9. Prior comments (MR/PR com `can_resolve`)
+### 9. Coletar comments (MR/PR com `can_resolve`)
 
-Siga `references/prior-comments.md`. Pipe discussions por `wrap_as_data.py`.
-Classe: `NOVO` | `DUPLICADO` | `REFORÇO`. Publique só NOVO + REFORÇO.
+Siga a coleta em `references/prior-comments.md`. Pipe discussions por
+`wrap_as_data.py`. **Não** dispare o subagente ainda — os achados só
+existem depois do 11.
 
 ### 10–11. Analisar e gravar `review.json`
 
@@ -254,10 +248,16 @@ persona. Cada achado: severidade, path, `new_line` no `head_sha`, corpo =
 `path`, `new_line`, `body`). GitHub `event=APPROVE` **proibido** salvo o
 usuário pediu — aí `--allow-approve`.
 
+**Depois** de gravar: se o 9 coletou threads, dispare o subagente de
+`prior-comments.md` com worktree, `head_sha` e os achados do JSON.
+Classe: `NOVO` | `DUPLICADO` | `REFORÇO`. Publique só NOVO + REFORÇO.
+
 ### 12. Preview + aprovação
 
-Preencha `templates/preview.md`. **Só publique após aprovação.** Se o
-usuário pediu workflow: skill `power-review-workflow` `start` agora.
+Preencha `templates/preview.md`. **Só publique após aprovação.** Não
+rode `apply_review_workflow.py`. Se o usuário pediu labels/Jira
+(GitLab/GitHub, MR/PR aberto): **peça** `/power-review-workflow start
+--mr|--pr <IID>`.
 
 ### 13. Publicar ou chat
 
@@ -271,10 +271,9 @@ python3 $SKILL_DIR/scripts/post_review.py --input review.json --forge <gitlab|gi
 Depois, a mesma linha **sem** `--dry-run`. Sem `--allow-approve` a menos que
 o usuário tenha pedido APPROVE no GitHub. `gh pr comment` não ancora — não use.
 
-### 14. Side-effects finish
-
-**Pular.** Depois do publish, se o usuário pediu workflow: skill
-`power-review-workflow` `finish`.
+Se publicou e o usuário pediu workflow: **peça** `/power-review-workflow
+finish --mr|--pr <IID> --has-blocking-findings true|false` (`true` se a
+lista final tiver ≥1 `CRÍTICO` / `ALTO` / `MÉDIO`).
 
 ### 15. Cleanup
 

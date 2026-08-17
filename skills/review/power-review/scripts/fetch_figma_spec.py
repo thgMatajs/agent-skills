@@ -74,6 +74,12 @@ def node_id_to_api(raw: str) -> str:
     return raw.replace("-", ":")
 
 
+def figma_host_allowed(host: str) -> bool:
+    """figma.com or a subdomain — not evilfigma.com."""
+    host = (host or "").lower().rstrip(".")
+    return host == "figma.com" or host.endswith(".figma.com")
+
+
 def parse_figma_url(url: str) -> dict[str, Any] | None:
     """Parse https://www.figma.com/:file_type/:file_key/:file_name?node-id=:id
 
@@ -85,7 +91,7 @@ def parse_figma_url(url: str) -> dict[str, Any] | None:
         return None
     parsed = urlparse(url if "://" in url else "https://" + url)
     host = (parsed.hostname or "").lower()
-    if not host.endswith("figma.com"):
+    if not figma_host_allowed(host):
         return None
     parts = [p for p in (parsed.path or "").split("/") if p]
     if len(parts) < 2:
