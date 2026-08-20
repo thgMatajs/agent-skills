@@ -1,6 +1,6 @@
 # agent-skills
 
-Skills for AI coding agents — authoring, then (next) review, QA, Android, and Firebase.
+Skills for AI coding agents — authoring, coding, review, then (next) QA, Android, and Firebase.
 
 Install with the [Vercel skills CLI](https://skills.sh/):
 
@@ -55,6 +55,18 @@ npx skills add thgMatajs/agent-skills --skill auditing-agent-rules
 ```
 
 Add `-g` to install for every local agent, not only the current one.
+
+## Coding
+
+### reuse-before-write
+
+Before writing new production code, searches the current repo for an existing callable API and returns `reuse` or `write-new` after a fit-first audit. Cheap scouts search; one stronger model qualifies. Call-only: it never suggests editing the callee.
+
+**Use when:** implementing a feature, plan task, or subtask — or when another skill is about to emit implementation.
+
+```bash
+npx skills add thgMatajs/agent-skills --skill reuse-before-write
+```
 
 ## Review
 
